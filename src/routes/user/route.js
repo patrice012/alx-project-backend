@@ -2,7 +2,6 @@ const express = require("express");
 const userRoute = express.Router();
 // const validator = require("../middleware/validationMiddleware");
 // const userValidationSchema = require("../models/user/userValidation");
-// const userFunctions = require("../controllers/user");
 const {
     user_post,
     user_list,

@@ -5,6 +5,7 @@ const cors = require("cors");
 const { PORT, DB_URI } = require("./config/config");
 const userRoute = require("./routes/user/route");
 const tweetRoute = require("./routes/tweet/route");
+const errorHandler = require("./error/error");
 
 const app = express();
 
@@ -31,7 +32,6 @@ db.on("error", (err) => {
     console.error("connection error:", err);
 });
 
-
 app.use("/", userRoute);
 app.use("/tweet", tweetRoute);
 
@@ -39,6 +39,9 @@ app.all("/*", (req, res) => {
     res.send("Error 404");
 });
 
+
+// Error Handler Middleware
+app.use(errorHandler);
 
 // open port
 const port = PORT || 3000;

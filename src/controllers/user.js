@@ -7,22 +7,22 @@ const user_list = async (req, res) => {
         const user = await UserModel.find();
         res.status(200).json(user);
     } catch (error) {
-        res.status(500).send(error.message);
+        next({ status: 500, message: "Invalid userId provided!" });
     }
 };
 
 // handle GET request base on ID
-const user_get = async (req, res) => {
+const user_get = async (req, res, next) => {
     const { id } = req.params;
     /* more logic here */
     try {
         const user = await UserModel.findById(id);
         if (!user) {
-            return res.status(400).send("Invalid userId provided!");
+            next({ status: 404, message: "Not found." });
         }
         res.status(200).json(user);
     } catch (error) {
-        res.status(500).send(error.message);
+        next({ status: 500, message: "Invalid userId provided!" });
     }
 };
 
@@ -34,9 +34,12 @@ const user_post = async (req, res) => {
     try {
         // Create a Todo
         const user = await UserModel.create(data);
+        if (!user) {
+            next({ status: 404, message: "Failed to create user." });
+        }
         res.status(201).json(user);
     } catch (error) {
-        res.status(500).send(error.message);
+        next({ status: 500, message: "Invalid userId provided!" });
     }
 };
 
@@ -48,11 +51,11 @@ const user_delete = async (req, res) => {
         /* use another method here */
         const user = await UserModel.findOneAndDelete(id);
         if (!user) {
-            return res.status(400).send("Invalid userId provided!");
+            next({ status: 404, message: "Not found." });
         }
         res.status(200).json({ deleted: user, msg: "success" });
     } catch (error) {
-        res.status(500).send(error.message);
+        next({ status: 500, message: "Invalid userId provided!" });
     }
 };
 
@@ -67,11 +70,11 @@ const user_put = async (req, res) => {
             new: true,
         });
         if (!user) {
-            return res.status(400).send("Invalid userId provided!");
+            next({ status: 400, message: "Invalid userId provided!" });
         }
         res.status(200).json(user);
     } catch (error) {
-        res.status(500).send(error.message);
+        next({ status: 500, message: "Invalid userId provided!" });
     }
 };
 
@@ -86,11 +89,11 @@ const user_patch = async (req, res) => {
             new: true,
         });
         if (!user) {
-            return res.status(400).send("Invalid userId provided!");
+            next({ status: 400, message: "Invalid userId provided!" });
         }
         res.status(200).json(user);
     } catch (error) {
-        res.status(500).send(error.message);
+        next({ status: 500, message: "Invalid userId provided!" });
     }
 };
 
