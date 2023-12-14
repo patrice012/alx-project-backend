@@ -16,9 +16,7 @@ const TweetSchema = new Schema({
     Video: {
         type: String,
     },
-    others: {
-        type: Mix,
-    },
+    others: { type: Schema.Types.Mixed },
     userId: mongoose.ObjectId,
 });
 

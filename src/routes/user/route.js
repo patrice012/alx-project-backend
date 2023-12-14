@@ -12,11 +12,11 @@ const {
     user_patch,
 } = require("../../controllers/user");
 
-userRoute.get("/", user_list);
+userRoute.get("", user_list);
 
 userRoute.get("/:id", user_get);
 
-userRoute.post("/",  user_post);
+userRoute.post("/", user_post);
 
 userRoute.delete("/:id", user_delete);
 

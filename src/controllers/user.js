@@ -3,6 +3,8 @@ const User = require('../models/user/userModels')
 // handle GET request
 const user_list = async (req, res) => {
     /* more logic here */
+    console.log('wwww')
+    res.send('hello from list')
 };
 
 // handle GET request base on ID

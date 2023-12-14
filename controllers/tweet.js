@@ -1,1 +1,0 @@
-const Tweet = require('../models/tweet/tweetModel')

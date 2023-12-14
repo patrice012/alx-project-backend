@@ -2,8 +2,9 @@ const express = require("express");
 const mongoose = require("mongoose");
 const morgan = require("morgan");
 const cors = require("cors");
-const { PORT, DB_URI } = require("../config/config");
-const userRoute = require('../routes/user/route')
+const { PORT, DB_URI } = require("./config/config");
+const userRoute = require("./routes/user/route");
+const tweetRoute = require("./routes/tweet/route");
 
 const app = express();
 
@@ -29,7 +30,14 @@ db.on("error", (err) => {
     console.error("connection error:", err);
 });
 
+
 app.use("/", userRoute);
+app.use("/tweet", tweetRoute);
+
+app.all("/*", (req, res) => {
+    res.send("Error 404");
+});
+
 
 // open port
 const port = PORT || 3000;
