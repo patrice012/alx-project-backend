@@ -3,8 +3,10 @@ const Tweet = require("../models/tweet/tweetModel");
 // handle GET request
 const tweet_list = async (req, res) => {
     /* more logic here */
-    console.log("wwww");
-    res.send("hello from tweet list");
+    const { id } = req.body;
+    const tweets = await Tweet.find({ userId: id });
+    console.log(tweets.user);
+    res.json(tweets);
 };
 
 // handle GET request base on ID
@@ -19,8 +21,8 @@ const tweet_get = async (req, res) => {
 const tweet_post = async (req, res) => {
     /* more logic here */
     const data = req.body;
-    await Tweet.create(data);
-    res.json({ message: "success" });
+    const tweet = await Tweet.create(data);
+    res.json({ message: tweet });
 };
 
 // handle DELETE request

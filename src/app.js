@@ -8,10 +8,11 @@ const tweetRoute = require("./routes/tweet/route");
 
 const app = express();
 
-// middleware
-app.use(express.urlencoded({ extended: false }));
-// body parsing
+// parse requests of content-type - application/json
 app.use(express.json());
+
+// parse requests of content-type - application/x-www-form-urlencoded
+app.use(express.urlencoded({ extended: false }));
 
 // log using Morgan
 app.use(morgan("dev"));
