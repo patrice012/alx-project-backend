@@ -32,8 +32,8 @@ db.on("error", (err) => {
     console.error("connection error:", err);
 });
 
-app.use("/", userRoute);
 app.use("/tweet", tweetRoute);
+app.use("/", userRoute);
 
 app.all("/*", (req, res) => {
     res.send("Error 404");

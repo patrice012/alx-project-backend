@@ -1,13 +1,13 @@
 const UserModel = require("../models/user/userModels");
 
 // handle GET request
-const user_list = async (req, res) => {
+const user_list = async (req, res, next) => {
     /* more logic here */
     try {
         const user = await UserModel.find();
         res.status(200).json(user);
     } catch (error) {
-        next({ status: 500, message: "Invalid userId provided!" });
+        next({ status: 500, message: "Invalid request!" });
     }
 };
 
@@ -27,7 +27,7 @@ const user_get = async (req, res, next) => {
 };
 
 // handle POST request
-const user_post = async (req, res) => {
+const user_post = async (req, res, next) => {
     /* more logic here */
     const data = req.body;
     // Validate request
@@ -44,7 +44,7 @@ const user_post = async (req, res) => {
 };
 
 // handle DELETE request
-const user_delete = async (req, res) => {
+const user_delete = async (req, res, next) => {
     const { id } = req.params;
     /* more logic here */
     try {
@@ -60,7 +60,7 @@ const user_delete = async (req, res) => {
 };
 
 // handle PUT request
-const user_put = async (req, res) => {
+const user_put = async (req, res, next) => {
     const { id } = req.params;
     const payload = req.body;
     /* more logic here */
@@ -79,7 +79,7 @@ const user_put = async (req, res) => {
 };
 
 // handle PATCH request
-const user_patch = async (req, res) => {
+const user_patch = async (req, res, next) => {
     const { id } = req.params;
     const payload = req.body;
     /* more logic here */

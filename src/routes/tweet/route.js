@@ -10,7 +10,7 @@ const {
     tweet_put,
 } = require("../../controllers/tweet");
 
-tweetRoute.get("/all", tweet_list);
+tweetRoute.get("/", tweet_list);
 
 tweetRoute.get("/:id", tweet_get);
 

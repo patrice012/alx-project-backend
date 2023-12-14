@@ -1,5 +1,5 @@
 const express = require("express");
-const userRoute = express.Router();
+const userRoute = express.Router({ strict: true });
 // const validator = require("../middleware/validationMiddleware");
 // const userValidationSchema = require("../models/user/userValidation");
 const {
@@ -11,7 +11,7 @@ const {
     user_patch,
 } = require("../../controllers/user");
 
-userRoute.get("", user_list);
+userRoute.get("/", user_list);
 
 userRoute.get("/:id", user_get);
 
