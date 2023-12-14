@@ -12,7 +12,7 @@ const tweet_list = async (req, res, next) => {
 };
 
 // handle GET request base on ID
-const tweet_get = async (req, res) => {
+const tweet_get = async (req, res, next) => {
     const { id } = req.params;
     /* more logic here */
     try {
@@ -27,7 +27,7 @@ const tweet_get = async (req, res) => {
 };
 
 // handle POST request
-const tweet_post = async (req, res) => {
+const tweet_post = async (req, res, next) => {
     /* more logic here */
     const data = req.body;
     // Validate request
@@ -44,7 +44,7 @@ const tweet_post = async (req, res) => {
 };
 
 // handle DELETE request
-const tweet_delete = async (req, res) => {
+const tweet_delete = async (req, res, next) => {
     const { id } = req.params;
     /* more logic here */
     try {
@@ -60,7 +60,7 @@ const tweet_delete = async (req, res) => {
 };
 
 // handle PUT request
-const tweet_put = async (req, res) => {
+const tweet_put = async (req, res, next) => {
     const { id } = req.params;
     const payload = req.body;
     /* more logic here */
@@ -79,7 +79,7 @@ const tweet_put = async (req, res) => {
 };
 
 // handle PATCH request
-const tweet_patch = async (req, res) => {
+const tweet_patch = async (req, res, next) => {
     const { id } = req.params;
     const payload = req.body;
     /* more logic here */

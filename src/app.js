@@ -1,8 +1,8 @@
 const express = require("express");
-const mongoose = require("mongoose");
 const morgan = require("morgan");
-const cors = require("cors");
-const { PORT, DB_URI } = require("./config/config");
+// const cors = require("cors");
+const db = require("./db");
+const { PORT } = require("./config/config");
 const userRoute = require("./routes/user/route");
 const tweetRoute = require("./routes/tweet/route");
 const errorHandler = require("./error/error");
@@ -19,26 +19,15 @@ app.use(express.urlencoded({ extended: false }));
 app.use(morgan("dev"));
 
 // connect to DB
-const db_uri = DB_URI || "mongodb://localhost:27017/twitterDB";
-mongoose.set("strictQuery", false);
-mongoose.connect(db_uri);
+db.connect();
 
-// test db connection
-const db = mongoose.connection;
-db.once("open", (_) => {
-    console.log("Database connected:", DB_URI);
-});
-db.on("error", (err) => {
-    console.error("connection error:", err);
-});
 
 app.use("/tweet", tweetRoute);
 app.use("/", userRoute);
 
 app.all("/*", (req, res) => {
-    res.send("Error 404");
+    res.status(404).json({error: 'invalid endpoint.'});
 });
-
 
 // Error Handler Middleware
 app.use(errorHandler);
