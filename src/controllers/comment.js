@@ -1,117 +1,100 @@
-const Tweet = require("../models/tweet/tweetModel");
 const CommentModel = require("../models/comments/comments");
 
-// handle GET request
-const tweet_list = async (req, res, next) => {
+const comment_list = async (req, res, next) => {
     /* more logic here */
     try {
-        const tweet = await Tweet.find();
-        res.status(200).json(tweet);
+        const comments = await CommentModel.find();
+        res.status(200).json(comments);
     } catch (error) {
         next({ status: 500, message: "Invalid request!" });
     }
 };
 
-// handle GET request base on ID
-const tweet_get = async (req, res, next) => {
+const comment_get = async (req, res, next) => {
     const { id } = req.params;
     /* more logic here */
     try {
-        const tweet = await Tweet.findById(id)
-            .populate("user", "-__v")
-            .lean(true);
-        if (!tweet) {
-            next({ status: 404, message: "Not found." });
-        }
-        /* get all comments if exists */
-        comments = await CommentModel.find({ tweetId: id })
+        const comment = await CommentModel.findById(id)
             .populate("userId", "-__v")
             .lean(true);
-        if (comments) {
-            tweet.comments = comments;
+        if (!comment) {
+            next({ status: 404, message: "Not found." });
         }
-        res.status(200).json(tweet);
+        res.status(200).json(comment);
     } catch (error) {
         next({ status: 500, message: "Invalid tweetId provided!" });
     }
 };
-
-// handle POST request
-const tweet_post = async (req, res, next) => {
+const comment_post = async (req, res, next) => {
     /* more logic here */
     const data = req.body;
     // Validate request
     try {
         // Create a Todo
-        const tweet = await Tweet.create(data);
-        if (!tweet) {
+        const comment = await CommentModel.create(data);
+        if (!comment) {
             next({ status: 404, message: "Failed to create tweet." });
         }
-        res.status(201).json(tweet);
+        res.status(201).json(comment);
     } catch (error) {
         next({ status: 500, message: "Invalid tweetId provided!" });
     }
 };
-
-// handle DELETE request
-const tweet_delete = async (req, res, next) => {
+const comment_delete = async (req, res, next) => {
     const { id } = req.params;
     /* more logic here */
     try {
         /* use another method here */
-        const tweet = await Tweet.findOneAndDelete(id);
-        if (!tweet) {
+        const comment = await CommentModel.findOneAndDelete(id);
+        if (!comment) {
             next({ status: 404, message: "Not found." });
         }
-        res.status(200).json({ deleted: tweet, msg: "success" });
+        res.status(200).json({ deleted: comment, msg: "success" });
     } catch (error) {
         next({ status: 500, message: "Invalid tweetId provided!" });
     }
 };
-
-// handle PUT request
-const tweet_put = async (req, res, next) => {
+const comment_put = async (req, res, next) => {
     const { id } = req.params;
     const payload = req.body;
     /* more logic here */
     try {
         /* refactoring this */
-        const tweet = await Tweet.findByIdAndUpdate(id, payload, {
+        const comment = await CommentModel.findByIdAndUpdate(id, payload, {
             new: true,
         });
-        if (!tweet) {
+        if (!comment) {
             next({ status: 400, message: "Invalid tweetId provided!" });
         }
-        res.status(200).json(tweet);
+        res.status(200).json(comment);
     } catch (error) {
         next({ status: 500, message: "Invalid tweetId provided!" });
     }
 };
 
-// handle PATCH request
-const tweet_patch = async (req, res, next) => {
+const comment_patch = async (req, res, next) => {
     const { id } = req.params;
     const payload = req.body;
     /* more logic here */
     try {
         /* refactoring this */
-        const tweet = await Tweet.findByIdAndUpdate(id, payload, {
+        const comment = await CommentModel.findByIdAndUpdate(id, payload, {
             new: true,
         });
-        if (!tweet) {
+        if (!comment) {
             next({ status: 400, message: "Invalid tweetId provided!" });
         }
-        res.status(200).json(tweet);
+        res.status(200).json(comment);
     } catch (error) {
         next({ status: 500, message: "Invalid tweetId provided!" });
     }
 };
 
 module.exports = {
-    tweet_delete,
-    tweet_get,
-    tweet_list,
-    tweet_patch,
-    tweet_post,
-    tweet_put,
+    comment_delete,
+    comment_get,
+    comment_list,
+    comment_patch,
+    comment_post,
+    comment_put,
 };

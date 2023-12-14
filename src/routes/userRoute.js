@@ -9,7 +9,7 @@ const {
     user_delete,
     user_put,
     user_patch,
-} = require("../../controllers/user");
+} = require("../controllers/user");
 
 userRoute.get("/", user_list);
 

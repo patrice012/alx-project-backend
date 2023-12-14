@@ -1,5 +1,6 @@
 const express = require("express");
 const tweetRoute = express.Router({ strict: true });
+const commentRoute = require('./commentRoute');
 
 const {
     tweet_delete,
@@ -8,7 +9,7 @@ const {
     tweet_patch,
     tweet_post,
     tweet_put,
-} = require("../../controllers/tweet");
+} = require("../controllers/tweet");
 
 tweetRoute.get("/", tweet_list);
 
@@ -21,5 +22,7 @@ tweetRoute.delete("/:id", tweet_delete);
 tweetRoute.put("/:id", tweet_put);
 
 tweetRoute.patch("/:id", tweet_patch);
+
+tweetRoute.use("/:id/comment", commentRoute);
 
 module.exports = tweetRoute;

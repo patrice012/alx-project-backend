@@ -3,8 +3,8 @@ const morgan = require("morgan");
 // const cors = require("cors");
 const db = require("./db");
 const { PORT } = require("./config/config");
-const userRoute = require("./routes/user/route");
-const tweetRoute = require("./routes/tweet/route");
+const userRoute = require("./routes/userRoute");
+const tweetRoute = require("./routes/tweetRoute");
 const errorHandler = require("./error/error");
 
 const app = express();
@@ -21,12 +21,12 @@ app.use(morgan("dev"));
 // connect to DB
 db.connect();
 
-
 app.use("/tweet", tweetRoute);
+
 app.use("/", userRoute);
 
 app.all("/*", (req, res) => {
-    res.status(404).json({error: 'invalid endpoint.'});
+    res.status(404).json({ error: "invalid endpoint." });
 });
 
 // Error Handler Middleware

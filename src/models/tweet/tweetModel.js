@@ -19,8 +19,10 @@ const TweetSchema = Schema(
             type: String,
         },
         others: { type: Schema.Types.Mixed },
-        userId: mongoose.ObjectId,
-        user: UserSchema.pick(["username", "email"]),
+        user: {
+            type: mongoose.ObjectId,
+            ref: "User",
+        },
     },
     {
         timestamps: {
@@ -29,13 +31,6 @@ const TweetSchema = Schema(
         },
     }
 );
-
-// TweetSchema.virtual("user", {
-//     ref: "User",
-//     localField: "userId",
-//     foreignField: "_id",
-//     justOne: true,
-// });
 
 TweetSchema.method("toJSON", function () {
     const { __v, _id, ...object } = this.toObject();
