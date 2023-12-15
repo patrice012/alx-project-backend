@@ -49,7 +49,7 @@ const user_delete = async (req, res, next) => {
     /* more logic here */
     try {
         /* use another method here */
-        const user = await UserModel.findOneAndDelete(id);
+        const user = await UserModel.findOneAndDelete({ _id: id });
         if (!user) {
             next({ status: 404, message: "Not found." });
         }
@@ -66,7 +66,7 @@ const user_put = async (req, res, next) => {
     /* more logic here */
     try {
         /* refactoring this */
-        const user = await UserModel.findByIdAndUpdate(id, payload, {
+        const user = await UserModel.findByIdAndUpdate({ _id: id }, payload, {
             new: true,
         });
         if (!user) {

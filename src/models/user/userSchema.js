@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
+const CommentModel = require("../comments/comments");
+const Tweet = require("../tweet/tweetModel");
 
 const validateEmail = function (v) {
     return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w+)+$/.test(v);
@@ -40,4 +42,23 @@ UserSchema.method("toJSON", function () {
     object.id = _id;
     return object;
 });
+
+UserSchema.post("findOneAndDelete", async function () {
+    /* delete all related comments and tweets */
+    const id = this.getQuery()["_id"].toString();
+    const comments = await CommentModel.deleteMany({ userId: id });
+    const tweets = await Tweet.deleteMany({ user: id });
+    console.log(comments, tweets);
+});
+
+
+
+// UserSchema.post("findByIdAndUpdate", async function () {
+//     /* delete all related comments and tweets */
+//     const id = this.getQuery()["_id"].toString();
+//     const comments = await CommentModel.updateMany({ userId: id }, {name:value});
+//     const tweets = await Tweet.updateMany({ user: id }, { name: value });
+//     console.log(comments, tweets);
+// });
+
 module.exports = UserSchema;
