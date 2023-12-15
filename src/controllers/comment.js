@@ -20,7 +20,7 @@ const comment_get = async (req, res, next) => {
         if (!comment) {
             next({ status: 404, message: "Not found." });
         }
-        res.status(200).json(comment);
+        res.status(200).json({ comment: comment });
     } catch (error) {
         next({ status: 500, message: "Invalid tweetId provided!" });
     }

@@ -1,7 +1,8 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 // const User = require("../user/userModels");
-const UserSchema = require("../user/userSchema");
+// const UserSchema = require("../user/userSchema");
+const CommentModel = require("../../models/comments/comments");
 
 const TweetSchema = Schema(
     {
@@ -36,6 +37,13 @@ TweetSchema.method("toJSON", function () {
     const { __v, _id, ...object } = this.toObject();
     object.id = _id;
     return object;
+});
+
+TweetSchema.post("findOneAndDelete", async function () {
+    /* delete all related comments */
+    const filter = { tweetId: this.getQuery()['_id'].toString() };
+    const comments = await CommentModel.deleteMany(filter);
+    console.log(comments)
 });
 
 module.exports = mongoose.model("Tweet", TweetSchema);

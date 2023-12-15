@@ -2,7 +2,6 @@ const errorHandler = (err, req, res, next) => {
     // if (process.env.NODE_ENV !== "test") {
     //     console.log(pe.render(err));
     // }
-  console.log('error here', err)
   //   const messagePerStatus = {
   //       404: "not found",
   //       401: "no authorization",
