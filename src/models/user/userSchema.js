@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const CommentModel = require("../comments/comments");
 const Tweet = require("../tweet/tweetModel");
+const Profile = require("./profil");
 
 const validateEmail = function (v) {
     return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w+)+$/.test(v);
@@ -43,22 +44,47 @@ UserSchema.method("toJSON", function () {
     return object;
 });
 
+/* delete all related comments, tweets and profile */
 UserSchema.post("findOneAndDelete", async function () {
-    /* delete all related comments and tweets */
     const id = this.getQuery()["_id"].toString();
     const comments = await CommentModel.deleteMany({ userId: id });
     const tweets = await Tweet.deleteMany({ user: id });
-    console.log(comments, tweets);
+    const profile = await Profile.deleteOne({ userId: id });
+    console.log(comments, tweets, profile);
 });
 
+// create user related profile
+UserSchema.post("save", async function () {
+    const payload = {
+        name: this.username,
+        email: this.email,
+        userId: this._id.toString(),
+    };
+    let profile = await Profile.findOne({
+        userId: this._id.toString(),
+    });
+    if (!profile) {
+        profile = await Profile.create(payload);
+        console.log(profile, "profile");
+    }
+});
 
-
-// UserSchema.post("findByIdAndUpdate", async function () {
-//     /* delete all related comments and tweets */
-//     const id = this.getQuery()["_id"].toString();
-//     const comments = await CommentModel.updateMany({ userId: id }, {name:value});
-//     const tweets = await Tweet.updateMany({ user: id }, { name: value });
-//     console.log(comments, tweets);
-// });
+/* update profile information */
+UserSchema.post("findOneAndUpdate", async function () {
+    /* get user id */
+    const id = this.getQuery()["_id"].toString();
+    /* get updated fields */
+    const updateValues = this.getUpdate()["$set"];
+    let payload = { userId: id };
+    let conditions = { userId: id };
+    let options = { upsert: true, new: true };
+    if (updateValues.username) payload["name"] = updateValues.username;
+    if (updateValues.email) payload["email"] = updateValues.email;
+    const profile = await Profile.findOneAndUpdate(
+        conditions,
+        payload,
+        options
+    );
+});
 
 module.exports = UserSchema;
