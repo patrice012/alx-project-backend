@@ -1,8 +1,8 @@
 const express = require("express");
 const userRoute = express.Router({ strict: true });
 const retweetRoute = require("./retweetRoute");
-// const validator = require("../middleware/validationMiddleware");
-// const userValidationSchema = require("../models/user/userValidation");
+const validator = require("../middlewares/validationMiddleware");
+const userValidationSchema = require("../models/user/userValidation");
 
 const {
     user_post,
@@ -24,12 +24,12 @@ userRoute.get("/", user_list);
 
 userRoute.get("/:id", user_get);
 
-userRoute.post("/", user_post);
+userRoute.post("/", validator(userValidationSchema), user_post);
 
 userRoute.delete("/:id", user_delete);
 
-userRoute.put("/:id", user_put);
+userRoute.put("/:id", validator(userValidationSchema), user_put);
 
-userRoute.patch("/:id", user_patch);
+userRoute.patch("/:id", validator(userValidationSchema), user_patch);
 
 module.exports = userRoute;
