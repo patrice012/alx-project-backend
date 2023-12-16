@@ -3,6 +3,7 @@ const Schema = mongoose.Schema;
 const CommentModel = require("../comments/comments");
 const Tweet = require("../tweet/tweetModel");
 const Profile = require("./profil");
+const Retweet = require("../tweet/reTweet");
 
 const validateEmail = function (v) {
     return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w+)+$/.test(v);
@@ -48,9 +49,10 @@ UserSchema.method("toJSON", function () {
 UserSchema.post("findOneAndDelete", async function () {
     const id = this.getQuery()["_id"].toString();
     const comments = await CommentModel.deleteMany({ userId: id });
+    const retweets = await Retweet.deleteMany({ user: id });
     const tweets = await Tweet.deleteMany({ user: id });
     const profile = await Profile.deleteOne({ userId: id });
-    console.log(comments, tweets, profile);
+    console.log(comments, tweets, profile, retweets);
 });
 
 // create user related profile
@@ -85,6 +87,7 @@ UserSchema.post("findOneAndUpdate", async function () {
         payload,
         options
     );
+    console.log(profile);
 });
 
 module.exports = UserSchema;

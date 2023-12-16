@@ -18,7 +18,7 @@ const bindUserIdToRequest = (req, res, next) => {
     next();
 };
 
-userRoute.use("/:id/retweet",bindUserIdToRequest, retweetRoute);
+userRoute.use("/:id/retweet", bindUserIdToRequest, retweetRoute);
 
 userRoute.get("/", user_list);
 

@@ -24,7 +24,6 @@ db.connect();
 
 
 app.use("/tweet", tweetRoute);
-// app.use("/:id/retweet", retweetRoute);
 app.use("/", userRoute);
 
 app.all("/*", (req, res) => {
