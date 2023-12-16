@@ -6,12 +6,12 @@ const errorHandler = (err, req, res, next) => {
     //     404: "not found",
     //     401: "no authorization",
     // };
-  const error = {
-      error: {
-          status: err.status || 500,
-          message: err.message || "something went wrong",
-      },
-  };
+    const error = {
+        error: {
+            status: err.status || 500,
+            message: err.message || "something went wrong",
+        },
+    };
     return res.status(err.status || 500).json(error);
 };
 

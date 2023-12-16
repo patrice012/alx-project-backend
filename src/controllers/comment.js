@@ -9,7 +9,7 @@ const comment_list = async (req, res, next) => {
             .lean(true);
         res.status(200).json(comments);
     } catch (error) {
-        next({ status: 500, message: "Invalid request!" });
+        next({ status: 500, message: "Invalid request!", error });
     }
 };
 
@@ -26,11 +26,11 @@ const comment_get = async (req, res, next) => {
             .populate("userId", "-__v")
             .lean(true);
         if (!comment) {
-            next({ status: 404, message: "Not found." });
+            next({ status: 404, message: "Not found.", error });
         }
         res.status(200).json({ comment: comment });
     } catch (error) {
-        next({ status: 500, message: "Invalid tweetId provided!" });
+        next({ status: 500, message: "Invalid tweetId provided!", error });
     }
 };
 const comment_post = async (req, res, next) => {
@@ -43,11 +43,11 @@ const comment_post = async (req, res, next) => {
         const tweetId = req.tweetId;
         const comment = await CommentModel.create(data);
         if (!comment) {
-            next({ status: 404, message: "Failed to create tweet." });
+            next({ status: 404, message: "Failed to create tweet.", error });
         }
         res.status(201).json(comment);
     } catch (error) {
-        next({ status: 500, message: "Invalid tweetId provided!" });
+        next({ status: 500, message: "Invalid tweetId provided!", error });
     }
 };
 const comment_delete = async (req, res, next) => {
@@ -62,11 +62,11 @@ const comment_delete = async (req, res, next) => {
             tweetId: tweetId,
         });
         if (!comment) {
-            next({ status: 404, message: "Not found." });
+            next({ status: 404, message: "Not found.", error });
         }
         res.status(200).json({ deleted: comment, msg: "success" });
     } catch (error) {
-        next({ status: 500, message: "Invalid tweetId provided!" });
+        next({ status: 500, message: "Invalid tweetId provided!", error });
     }
 };
 const comment_put = async (req, res, next) => {
@@ -79,11 +79,11 @@ const comment_put = async (req, res, next) => {
             new: true,
         });
         if (!comment) {
-            next({ status: 400, message: "Invalid tweetId provided!" });
+            next({ status: 400, message: "Invalid tweetId provided!", error });
         }
         res.status(200).json(comment);
     } catch (error) {
-        next({ status: 500, message: "Invalid tweetId provided!" });
+        next({ status: 500, message: "Invalid tweetId provided!", error });
     }
 };
 
@@ -97,11 +97,11 @@ const comment_patch = async (req, res, next) => {
             new: true,
         });
         if (!comment) {
-            next({ status: 400, message: "Invalid tweetId provided!" });
+            next({ status: 400, message: "Invalid tweetId provided!", error });
         }
         res.status(200).json(comment);
     } catch (error) {
-        next({ status: 500, message: "Invalid tweetId provided!" });
+        next({ status: 500, message: "Invalid tweetId provided!", error });
     }
 };
 

@@ -12,7 +12,7 @@ const retweet_list = async (req, res, next) => {
             .lean(true);
         res.status(200).json(retweet);
     } catch (error) {
-        next({ status: 500, message: "Invalid request!" });
+        next({ status: 500, message: "Invalid request!", error });
     }
 };
 
@@ -30,12 +30,12 @@ const retweet_get = async (req, res, next) => {
             .populate("userId", "-__v")
             .lean(true);
         if (!retweet) {
-            next({ status: 404, message: "Not found." });
+            next({ status: 404, message: "Not found.", error });
         }
         res.status(200).json(retweet);
     } catch (error) {
         console.log(error);
-        next({ status: 500, message: "Invalid retweetId provided!" });
+        next({ status: 500, message: "Invalid retweetId provided!", error });
     }
 };
 
@@ -48,11 +48,11 @@ const retweet_post = async (req, res, next) => {
         // Create a Todo
         const retweet = await Retweet.create(data);
         if (!retweet) {
-            next({ status: 404, message: "Failed to create retweet." });
+            next({ status: 404, message: "Failed to create retweet.", error });
         }
         res.status(201).json(retweet);
     } catch (error) {
-        next({ status: 500, message: "Invalid retweetId provided!" });
+        next({ status: 500, message: "Invalid retweetId provided!", error });
     }
 };
 
@@ -64,11 +64,11 @@ const retweet_delete = async (req, res, next) => {
         /* use another method here */
         const retweet = await Retweet.findOneAndDelete({ _id: id });
         if (!retweet) {
-            next({ status: 404, message: "Not found." });
+            next({ status: 404, message: "Not found.", error });
         }
         res.status(200).json({ deleted: retweet, msg: "success" });
     } catch (error) {
-        next({ status: 500, message: "Invalid retweetId provided!" });
+        next({ status: 500, message: "Invalid retweetId provided!", error });
     }
 };
 
@@ -83,11 +83,15 @@ const retweet_put = async (req, res, next) => {
             new: true,
         });
         if (!retweet) {
-            next({ status: 400, message: "Invalid retweetId provided!" });
+            next({
+                status: 400,
+                message: "Invalid retweetId provided!",
+                error,
+            });
         }
         res.status(200).json(retweet);
     } catch (error) {
-        next({ status: 500, message: "Invalid retweetId provided!" });
+        next({ status: 500, message: "Invalid retweetId provided!", error });
     }
 };
 
@@ -102,11 +106,15 @@ const retweet_patch = async (req, res, next) => {
             new: true,
         });
         if (!retweet) {
-            next({ status: 400, message: "Invalid retweetId provided!" });
+            next({
+                status: 400,
+                message: "Invalid retweetId provided!",
+                error,
+            });
         }
         res.status(200).json(retweet);
     } catch (error) {
-        next({ status: 500, message: "Invalid retweetId provided!" });
+        next({ status: 500, message: "Invalid retweetId provided!", error });
     }
 };
 

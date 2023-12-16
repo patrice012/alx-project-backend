@@ -9,11 +9,11 @@ const profile_get = async (req, res, next) => {
             .populate("userId")
             .lean(true);
         if (!profile) {
-            next({ status: 404, message: "Not found." });
+            next({ status: 404, message: "Not found.", error });
         }
         res.status(200).json(profile);
     } catch (error) {
-        next({ status: 500, message: "Invalid profileId provided!" });
+        next({ status: 500, message: "Invalid profileId provided!", error });
     }
 };
 
@@ -27,11 +27,15 @@ const profile_put = async (req, res, next) => {
             new: true,
         });
         if (!profile) {
-            next({ status: 400, message: "Invalid profileId provided!" });
+            next({
+                status: 400,
+                message: "Invalid profileId provided!",
+                error,
+            });
         }
         res.status(200).json(profile);
     } catch (error) {
-        next({ status: 500, message: "Invalid profileId provided!" });
+        next({ status: 500, message: "Invalid profileId provided!", error });
     }
 };
 
@@ -45,11 +49,15 @@ const profile_patch = async (req, res, next) => {
             new: true,
         });
         if (!profile) {
-            next({ status: 400, message: "Invalid profileId provided!" });
+            next({
+                status: 400,
+                message: "Invalid profileId provided!",
+                error,
+            });
         }
         res.status(200).json(profile);
     } catch (error) {
-        next({ status: 500, message: "Invalid profileId provided!" });
+        next({ status: 500, message: "Invalid profileId provided!", error });
     }
 };
 
