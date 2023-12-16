@@ -6,14 +6,14 @@ const commentSchema = Schema(
         text: {
             type: String,
             trim: true,
-            require: [true, "text is required"],
+            require: true,
             minLength: [2, "Must be at least 2, got {VALUE}"],
             maxLength: [100, "Maximum value is 100, got {VALUE"],
         },
         userId: {
             type: mongoose.ObjectId,
             ref: "User",
-            require: [true, "Comment's user can't be null"],
+            require: true,
         },
         tweetId: {
             type: mongoose.ObjectId,
