@@ -6,7 +6,10 @@ const retweet_list = async (req, res, next) => {
     /* more logic here */
     const userId = req.userId;
     try {
-        const retweet = await Retweet.find({ userId: userId }).lean(true);
+        const retweet = await Retweet.find({ userId: userId })
+            .populate("userId", "-__v")
+            .populate("tweetId", "-__v")
+            .lean(true);
         res.status(200).json(retweet);
     } catch (error) {
         next({ status: 500, message: "Invalid request!" });

@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 
 const retweetSchema = Schema(
     {
-        title: {
+        text: {
             type: String,
             minLength: [1, "Must be at least 1, got {VALUE}"],
             maxLength: [100, "Maximum value is 100, got {VALUE"],

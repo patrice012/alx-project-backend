@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const { DB_URI } = require("./config/config");
+const { DB_URI } = require("./config");
 
 // connect to DB using URI
 const db_uri = DB_URI || "mongodb://localhost:27017/twitterDB";

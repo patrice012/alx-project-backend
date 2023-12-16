@@ -8,7 +8,7 @@ const TweetSchema = Schema(
         text: {
             type: String,
             trim: true,
-            require: [true, "Input text is required"],
+            require: true,
             minLength: [2, "Must be at least 2, got {VALUE}"],
             maxLength: [150, "Maximum value is 150, got {VALUE"],
         },
@@ -19,9 +19,10 @@ const TweetSchema = Schema(
             type: String,
         },
         others: { type: Schema.Types.Mixed },
-        user: {
+        userId: {
             type: mongoose.ObjectId,
             ref: "User",
+            require: true,
         },
     },
     {

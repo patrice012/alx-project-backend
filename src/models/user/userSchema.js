@@ -14,13 +14,13 @@ const UserSchema = Schema(
         username: {
             type: String,
             trim: true,
-            require: [true, "username is required"],
+            require: true,
             minLength: [2, "Must be at least 2, got {VALUE}"],
             maxLength: [50, "Maximum value is 50, got {VALUE"],
         },
         email: {
             type: String,
-            require: [true, "email is required"],
+            require: true,
             trim: true,
             lowercase: true,
 
@@ -49,8 +49,8 @@ UserSchema.method("toJSON", function () {
 UserSchema.post("findOneAndDelete", async function () {
     const id = this.getQuery()["_id"].toString();
     const comments = await CommentModel.deleteMany({ userId: id });
-    const retweets = await Retweet.deleteMany({ user: id });
-    const tweets = await Tweet.deleteMany({ user: id });
+    const retweets = await Retweet.deleteMany({ userId: id });
+    const tweets = await Tweet.deleteMany({ userId: id });
     const profile = await Profile.deleteOne({ userId: id });
     console.log(comments, tweets, profile, retweets);
 });

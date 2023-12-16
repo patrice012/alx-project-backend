@@ -4,7 +4,9 @@ const comment_list = async (req, res, next) => {
     /* more logic here */
     try {
         const tweetId = req.tweetId;
-        const comments = await CommentModel.find({ tweetId: tweetId });
+        const comments = await CommentModel.find({ tweetId: tweetId })
+            .populate("userId", "-__v")
+            .lean(true);
         res.status(200).json(comments);
     } catch (error) {
         next({ status: 500, message: "Invalid request!" });

@@ -1,12 +1,11 @@
 const errorHandler = (err, req, res, next) => {
-    // if (process.env.NODE_ENV !== "test") {
-    //     console.log(pe.render(err));
-    // }
-  //   const messagePerStatus = {
-  //       404: "not found",
-  //       401: "no authorization",
-  //   };
-  // const message = messagePerStatus[err.status];
+    if (process.env.NODE_ENV === "test") {
+        console.log(err);
+    }
+    // const messagePerStatus = {
+    //     404: "not found",
+    //     401: "no authorization",
+    // };
   const error = {
       error: {
           status: err.status || 500,
