@@ -5,6 +5,7 @@ const retweetSchema = Schema(
     {
         text: {
             type: String,
+            trim: true,
             minLength: [1, "Must be at least 1, got {VALUE}"],
             maxLength: [100, "Maximum value is 100, got {VALUE"],
         },

@@ -10,6 +10,8 @@ const profileSchema = Schema(
         },
         email: {
             type: String,
+            trim: true,
+            require: [true, "email is required!"],
         },
         location: {
             type: String,
@@ -31,9 +33,11 @@ const profileSchema = Schema(
         },
         coverPicture: {
             type: String,
+            trim: true,
         },
         profilePicture: {
             type: String,
+            trim: true,
         },
         userId: {
             type: mongoose.ObjectId,

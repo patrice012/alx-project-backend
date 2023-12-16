@@ -12,10 +12,15 @@ const {
 } = require("../controllers/retweet");
 
 retweetRoute.get("/", retweet_list);
+
 retweetRoute.post("/", validator(reTweetValidationSchema), retweet_post);
+
 retweetRoute.get("/:id", retweet_get);
+
 retweetRoute.delete("/:id", retweet_delete);
+
 retweetRoute.put("/:id", validator(reTweetValidationSchema), retweet_put);
+
 retweetRoute.patch("/:id", validator(reTweetValidationSchema), retweet_patch);
 
 module.exports = retweetRoute;
