@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const CommentModel = require("../comments/comments");
 const Tweet = require("../tweet/tweetModel");
-const Profile = require("./profil");
+const Profile = require("./profile");
 const Retweet = require("../tweet/reTweet");
 
 const validateEmail = function (v) {

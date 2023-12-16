@@ -1,4 +1,4 @@
-const Profile = require("../models/user/profil");
+const Profile = require("../models/user/profile");
 
 // handle GET request base on ID
 const profile_get = async (req, res, next) => {
