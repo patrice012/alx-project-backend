@@ -39,8 +39,8 @@ TweetSchema.method("toJSON", function () {
     return object;
 });
 
+/* delete all related comments */
 TweetSchema.post("findOneAndDelete", async function () {
-    /* delete all related comments */
     const filter = { tweetId: this.getQuery()['_id'].toString() };
     const comments = await CommentModel.deleteMany(filter);
     console.log(comments)

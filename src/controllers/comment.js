@@ -3,7 +3,8 @@ const CommentModel = require("../models/comments/comments");
 const comment_list = async (req, res, next) => {
     /* more logic here */
     try {
-        const comments = await CommentModel.find();
+        const tweetId = req.tweetId;
+        const comments = await CommentModel.find({ tweetId: tweetId });
         res.status(200).json(comments);
     } catch (error) {
         next({ status: 500, message: "Invalid request!" });
@@ -12,9 +13,14 @@ const comment_list = async (req, res, next) => {
 
 const comment_get = async (req, res, next) => {
     const { id } = req.params;
+
     /* more logic here */
     try {
-        const comment = await CommentModel.findById(id)
+        const tweetId = req.tweetId;
+        const comment = await CommentModel.findById({
+            tweetId: tweetId,
+            id: id,
+        })
             .populate("userId", "-__v")
             .lean(true);
         if (!comment) {
@@ -28,9 +34,11 @@ const comment_get = async (req, res, next) => {
 const comment_post = async (req, res, next) => {
     /* more logic here */
     const data = req.body;
+
     // Validate request
     try {
         // Create a Todo
+        const tweetId = req.tweetId;
         const comment = await CommentModel.create(data);
         if (!comment) {
             next({ status: 404, message: "Failed to create tweet." });
@@ -42,10 +50,16 @@ const comment_post = async (req, res, next) => {
 };
 const comment_delete = async (req, res, next) => {
     const { id } = req.params;
+
     /* more logic here */
     try {
         /* use another method here */
-        const comment = await CommentModel.findOneAndDelete(id);
+        const tweetId = req.tweetId;
+
+        const comment = await CommentModel.findOneAndDelete({
+            id: id,
+            tweetId: tweetId,
+        });
         if (!comment) {
             next({ status: 404, message: "Not found." });
         }
