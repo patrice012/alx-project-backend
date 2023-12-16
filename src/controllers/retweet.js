@@ -4,8 +4,9 @@ const Retweet = require("../models/tweet/reTweet");
 // get all user retweets
 const retweet_list = async (req, res, next) => {
     /* more logic here */
+    const userId = req.userId;
     try {
-        const retweet = await Retweet.find();
+        const retweet = await Retweet.find({ userId: userId }).lean(true);
         res.status(200).json(retweet);
     } catch (error) {
         next({ status: 500, message: "Invalid request!" });
@@ -15,14 +16,22 @@ const retweet_list = async (req, res, next) => {
 // handle GET request base on ID
 const retweet_get = async (req, res, next) => {
     const { id } = req.params;
+    const userId = req.userId;
     /* more logic here */
     try {
-        const retweet = await Retweet.findById(id);
+        const retweet = await Retweet.find({
+            _id: id,
+            userId: userId,
+        })
+            .populate("tweetId", "-__v")
+            .populate("userId", "-__v")
+            .lean(true);
         if (!retweet) {
             next({ status: 404, message: "Not found." });
         }
         res.status(200).json(retweet);
     } catch (error) {
+        console.log(error);
         next({ status: 500, message: "Invalid retweetId provided!" });
     }
 };

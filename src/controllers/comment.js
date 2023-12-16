@@ -55,7 +55,6 @@ const comment_delete = async (req, res, next) => {
     try {
         /* use another method here */
         const tweetId = req.tweetId;
-
         const comment = await CommentModel.findOneAndDelete({
             id: id,
             tweetId: tweetId,

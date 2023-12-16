@@ -1,7 +1,9 @@
 const express = require("express");
 const userRoute = express.Router({ strict: true });
+const retweetRoute = require("./retweetRoute");
 // const validator = require("../middleware/validationMiddleware");
 // const userValidationSchema = require("../models/user/userValidation");
+
 const {
     user_post,
     user_list,
@@ -10,6 +12,13 @@ const {
     user_put,
     user_patch,
 } = require("../controllers/user");
+
+const bindUserIdToRequest = (req, res, next) => {
+    req.userId = req.params.id;
+    next();
+};
+
+userRoute.use("/:id/retweet",bindUserIdToRequest, retweetRoute);
 
 userRoute.get("/", user_list);
 

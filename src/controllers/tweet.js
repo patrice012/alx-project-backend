@@ -5,7 +5,7 @@ const CommentModel = require("../models/comments/comments");
 const tweet_list = async (req, res, next) => {
     /* more logic here */
     try {
-        const tweet = await Tweet.find({});
+        const tweet = await Tweet.find({}).lean(true);
         res.status(200).json(tweet);
     } catch (error) {
         next({ status: 500, message: "Invalid request!" });
