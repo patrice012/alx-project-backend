@@ -3,6 +3,7 @@ const userRoute = express.Router({ strict: true });
 const retweetRoute = require("./retweetRoute");
 const validator = require("../middlewares/validationMiddleware");
 const userValidationSchema = require("../models/user/userValidation");
+const { authenticate } = require("../middlewares/auth");
 
 const {
     user_post,
@@ -26,7 +27,7 @@ userRoute.get("/:id", user_get);
 
 userRoute.post("/", validator(userValidationSchema), user_post);
 
-userRoute.delete("/:id", user_delete);
+userRoute.delete("/:id",authenticate, user_delete);
 
 userRoute.put("/:id", validator(userValidationSchema), user_put);
 

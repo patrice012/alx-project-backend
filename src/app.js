@@ -5,6 +5,7 @@ const db = require("./config/db");
 const { PORT } = require("./config/config");
 const userRoute = require("./routes/userRoute");
 const tweetRoute = require("./routes/tweetRoute");
+const authRoutes = require("./routes/auth");
 const errorHandler = require("./error/error");
 
 const app = express();
@@ -21,6 +22,8 @@ app.use(morgan("dev"));
 // connect to DB
 db.connect();
 
+// Define authentication routes
+app.use('/auth', authRoutes);
 app.use("/tweet", tweetRoute);
 app.use("/", userRoute);
 

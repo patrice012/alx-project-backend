@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const bcrypt = require("bcrypt");
 const Schema = mongoose.Schema;
 const CommentModel = require("../comments/comments");
 const Tweet = require("../tweet/tweetModel");
@@ -30,6 +31,10 @@ const UserSchema = Schema(
                     `${props.value} is not a valid Email address!`,
             },
         },
+        password: {
+            type: String,
+            required: true,
+        },
     },
     {
         timestamps: {
@@ -44,6 +49,25 @@ UserSchema.method("toJSON", function () {
     object.id = _id;
     return object;
 });
+
+UserSchema.pre("save", async function (next) {
+    const user = this;
+    // Only run this function if password was moddified (not on other update functions)
+    if (!user.isModified("password")) return next();
+
+    try {
+        const salt = await bcrypt.genSalt();
+        user.password = await bcrypt.hash(user.password, salt);
+        next();
+    } catch (error) {
+        return next(error);
+    }
+});
+
+// Compare the given password with the hashed password in the database
+UserSchema.methods.comparePassword = async function (password) {
+    return bcrypt.compare(password, this.password);
+};
 
 /* delete all related comments, tweets and profile */
 UserSchema.post("findOneAndDelete", async function () {
