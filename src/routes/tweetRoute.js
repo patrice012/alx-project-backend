@@ -1,7 +1,8 @@
 const express = require("express");
 const tweetRoute = express.Router({ strict: true });
 const commentRoute = require("../routes/commentRoute");
-
+const validator = require("../middlewares/validationMiddleware");
+const tweetValidationSchema = require("../models/tweet/tweetValidation");
 const {
     tweet_delete,
     tweet_get,
@@ -22,12 +23,12 @@ tweetRoute.get("/", tweet_list);
 
 tweetRoute.get("/:id", tweet_get);
 
-tweetRoute.post("/", tweet_post);
+tweetRoute.post("/", validator(tweetValidationSchema), tweet_post);
 
 tweetRoute.delete("/:id", tweet_delete);
 
-tweetRoute.put("/:id", tweet_put);
+tweetRoute.put("/:id", validator(tweetValidationSchema), tweet_put);
 
-tweetRoute.patch("/:id", tweet_patch);
+tweetRoute.patch("/:id", validator(tweetValidationSchema), tweet_patch);
 
 module.exports = tweetRoute;

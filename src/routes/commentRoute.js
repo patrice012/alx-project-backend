@@ -1,6 +1,7 @@
 const express = require("express");
 const commentRoute = express.Router();
-
+const validator = require("../middlewares/validationMiddleware");
+const commentValidationSchema = require("../models/comments/commentValidation");
 const {
     comment_delete,
     comment_get,
@@ -14,12 +15,12 @@ commentRoute.get("/", comment_list);
 
 commentRoute.get("/:id/", comment_get);
 
-commentRoute.post("/", comment_post);
+commentRoute.post("/", validator(commentValidationSchema), comment_post);
 
 commentRoute.delete("/:id", comment_delete);
 
-commentRoute.put("/:id", comment_put);
+commentRoute.put("/:id", validator(commentValidationSchema), comment_put);
 
-commentRoute.patch("/:id", comment_patch);
+commentRoute.patch("/:id", validator(commentValidationSchema), comment_patch);
 
 module.exports = commentRoute;

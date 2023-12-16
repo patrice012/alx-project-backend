@@ -1,6 +1,7 @@
 const express = require("express");
 const retweetRoute = express.Router();
-
+const validator = require("../middlewares/validationMiddleware");
+const reTweetValidationSchema = require("../models/tweet/reTweetValidation");
 const {
     retweet_list,
     retweet_get,
@@ -11,10 +12,10 @@ const {
 } = require("../controllers/retweet");
 
 retweetRoute.get("/", retweet_list);
-retweetRoute.post("/", retweet_post);
+retweetRoute.post("/", validator(reTweetValidationSchema), retweet_post);
 retweetRoute.get("/:id", retweet_get);
 retweetRoute.delete("/:id", retweet_delete);
-retweetRoute.put("/:id", retweet_put);
-retweetRoute.patch("/:id", retweet_patch);
+retweetRoute.put("/:id", validator(reTweetValidationSchema), retweet_put);
+retweetRoute.patch("/:id", validator(reTweetValidationSchema), retweet_patch);
 
 module.exports = retweetRoute;
