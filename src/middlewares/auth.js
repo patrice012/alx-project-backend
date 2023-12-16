@@ -3,8 +3,10 @@ const UserModel = require("../models/user/userModels");
 const { SECRET_KEY } = require("../config/config");
 
 const authenticate = async (req, res, next) => {
-    const token = req.headers.authorization?.split(" ")[1];
-
+    let token = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+        token = req.headers.bear;
+    }
     if (!token) {
         return res.status(401).json({ message: "Authentication required" });
     }

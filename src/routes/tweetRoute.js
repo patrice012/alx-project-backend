@@ -3,6 +3,8 @@ const tweetRoute = express.Router({ strict: true });
 const commentRoute = require("../routes/commentRoute");
 const validator = require("../middlewares/validationMiddleware");
 const tweetValidationSchema = require("../models/tweet/tweetValidation");
+const { authenticate } = require("../middlewares/auth");
+
 const {
     tweet_delete,
     tweet_get,
@@ -22,6 +24,8 @@ tweetRoute.use("/:id/comment", bindTweetIdToRequest, commentRoute);
 tweetRoute.get("/", tweet_list);
 
 tweetRoute.get("/:id", tweet_get);
+
+tweetRoute.use(authenticate);
 
 tweetRoute.post("/", validator(tweetValidationSchema), tweet_post);
 

@@ -23,11 +23,13 @@ userRoute.use("/:id/retweet", bindUserIdToRequest, retweetRoute);
 
 userRoute.get("/", user_list);
 
-userRoute.get("/:id", user_get);
-
 userRoute.post("/", validator(userValidationSchema), user_post);
 
-userRoute.delete("/:id",authenticate, user_delete);
+userRoute.use(authenticate);
+
+userRoute.get("/:id", user_get);
+
+userRoute.delete("/:id", user_delete);
 
 userRoute.put("/:id", validator(userValidationSchema), user_put);
 

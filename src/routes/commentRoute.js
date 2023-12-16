@@ -2,6 +2,8 @@ const express = require("express");
 const commentRoute = express.Router();
 const validator = require("../middlewares/validationMiddleware");
 const commentValidationSchema = require("../models/comments/commentValidation");
+const { authenticate } = require("../middlewares/auth");
+
 const {
     comment_delete,
     comment_get,
@@ -10,6 +12,8 @@ const {
     comment_post,
     comment_put,
 } = require("../controllers/comment");
+
+commentRoute.use(authenticate);
 
 commentRoute.get("/", comment_list);
 

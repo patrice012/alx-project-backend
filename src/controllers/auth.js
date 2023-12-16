@@ -8,13 +8,13 @@ const register = async (req, res, next) => {
     const { username, email, password } = req.body;
 
     try {
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const user = new UserModel({
+        // const hashedPassword = await bcrypt.hash(password, 10);
+        const user = UserModel.create({
             username,
             email,
-            password: hashedPassword,
+            password: password,
         });
-        await user.save();
+        // await user.save();
         res.json({ message: "Registration successful" });
     } catch (error) {
         next(error);
