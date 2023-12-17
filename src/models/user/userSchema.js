@@ -1,10 +1,13 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 const Schema = mongoose.Schema;
 const CommentModel = require("../comments/comments");
 const Tweet = require("../tweet/tweetModel");
 const Profile = require("./profile");
 const Retweet = require("../tweet/reTweet");
+const { ACCESS_TOKEN, REFRESH_TOKEN } = require("../../config/config");
+const crypto = require("crypto");
 
 const validateEmail = function (v) {
     return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w+)+$/.test(v);
@@ -22,6 +25,7 @@ const UserSchema = Schema(
         email: {
             type: String,
             require: true,
+            unique: true,
             trim: true,
             lowercase: true,
 
@@ -35,6 +39,13 @@ const UserSchema = Schema(
             type: String,
             required: true,
         },
+        tokens: [
+            {
+                token: { required: true, type: String },
+            },
+        ],
+        resetpasswordtoken: String,
+        resetpasswordtokenexpiry: Date,
     },
     {
         timestamps: {
@@ -44,6 +55,92 @@ const UserSchema = Schema(
     }
 );
 
+/* Remove password and token in query results */
+// UserSchema.set("toJSON", {
+//     virtuals: true,
+//     transform: function (doc, ret, options) {
+//         delete ret.password;
+//         delete ret.tokens;
+//         return ret;
+//     },
+// });
+
+/* ATTACH CUSTOM STATIC METHODS */
+
+// Compare the given password with the hashed password in the database
+UserSchema.methods.comparePassword = async function (password) {
+    return bcrypt.compare(password, this.password);
+};
+
+UserSchema.statics.findByCredentials = async (username, password) => {
+    const user = await UserModel.findOne({ username }); //email
+    if (!user) throw new Error("User not found");
+    const passwordMacthed = await user.comparePassword(password);
+    if (!passwordMacthed) throw new Error("Incorrect password");
+    return user;
+};
+
+UserSchema.methods.generateAcessToken = function () {
+    const user = this;
+    // Create signed access token
+    const accessToken = jwt.sign({ userId: user._id }, ACCESS_TOKEN.secret, {
+        expiresIn: ACCESS_TOKEN.expiry,
+    });
+    return accessToken;
+};
+
+UserSchema.methods.generateRefreshToken = async function () {
+    const user = this;
+
+    // Create signed refresh token
+    const refreshToken = jwt.sign(
+        {
+            userId: user._id,
+        },
+        REFRESH_TOKEN.secret,
+        {
+            expiresIn: REFRESH_TOKEN.expiry,
+        }
+    );
+
+    // Create a 'refresh token hash' from 'refresh token'
+    const refreshTokenHash = crypto
+        .createHmac("sha256", REFRESH_TOKEN.secret)
+        .update(refreshToken)
+        .digest("hex");
+
+    // Save 'refresh token hash' to database
+    user.tokens.push({ token: refreshTokenHash });
+    await user.save();
+
+    return refreshToken;
+};
+
+UserSchema.methods.generateResetToken = async function () {
+    const resetTokenValue = crypto.randomBytes(20).toString("base64url");
+    const resetTokenSecret = crypto.randomBytes(10).toString("hex");
+    const user = this;
+
+    // Separator of `+` because generated base64url characters doesn't include this character
+    const resetToken = `${resetTokenValue}+${resetTokenSecret}`;
+
+    // Create a hash
+    const resetTokenHash = crypto
+        .createHmac("sha256", resetTokenSecret)
+        .update(resetTokenValue)
+        .digest("hex");
+
+    user.resetpasswordtoken = resetTokenHash;
+    user.resetpasswordtokenexpiry =
+        Date.now() + (RESET_PASSWORD_TOKEN.expiry || 5) * 60 * 1000; // Sets expiration age
+
+    await user.save();
+
+    return resetToken;
+};
+
+/* ATTACH SOME MIDDLEWARE FONCTION */
+/* Change _id into id */
 UserSchema.method("toJSON", function () {
     const { __v, _id, ...object } = this.toObject();
     object.id = _id;
@@ -51,25 +148,20 @@ UserSchema.method("toJSON", function () {
 });
 
 UserSchema.pre("save", async function (next) {
-    const user = this;
+    // this === user
     // Only run this function if password was moddified (not on other update functions)
-    if (!user.isModified("password")) return next();
+    if (!this.isModified("password")) return next();
 
     try {
-        const salt = await bcrypt.genSalt();
-        user.password = await bcrypt.hash(user.password, salt);
-        console.log(user.password, "user.password");
+        const salt = await bcrypt.genSalt(10);
+        this.password = await bcrypt.hash(this.password, salt);
+        console.log(this.password, "user.password");
 
         next();
     } catch (error) {
         return next(error);
     }
 });
-
-// Compare the given password with the hashed password in the database
-UserSchema.methods.comparePassword = async function (password) {
-    return bcrypt.compare(password, this.password);
-};
 
 /* delete all related comments, tweets and profile */
 UserSchema.post("findOneAndDelete", async function () {
@@ -116,4 +208,6 @@ UserSchema.post("findOneAndUpdate", async function () {
     console.log(profile);
 });
 
-module.exports = UserSchema;
+// module.exports = UserSchema;
+const UserModel = mongoose.model("User", UserSchema);
+module.exports = UserModel;

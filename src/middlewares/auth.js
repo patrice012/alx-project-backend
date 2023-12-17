@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
-const UserModel = require("../models/user/userModels");
-const { SECRET_KEY } = require("../config/config");
+const UserModel = require("../models/user/userSchema");
+// const { SECRET_KEY } = require("../config/config");
 
 const authenticate = async (req, res, next) => {
     let token = req.headers.authorization?.split(" ")[1];

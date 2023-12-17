@@ -1,4 +1,4 @@
-const UserModel = require("../models/user/userModels");
+const UserModel = require("../models/user/userSchema");
 
 // handle GET request
 const user_list = async (req, res, next) => {
