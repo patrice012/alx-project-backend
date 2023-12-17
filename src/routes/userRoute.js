@@ -25,7 +25,7 @@ userRoute.get("/", user_list);
 
 userRoute.post("/", validator(userValidationSchema), user_post);
 
-userRoute.use(authenticate);
+// userRoute.use(authenticate);
 
 userRoute.get("/:id", user_get);
 

@@ -17,9 +17,15 @@ const user_get = async (req, res, next) => {
     /* more logic here */
     try {
         const user = await UserModel.findById(id);
+        const tweets = await user.getAllTweets();
+        const reTweets = await user.getAllreTweets();
+        user.tweets = tweets;
+        user.reTweets = reTweets;
+        console.log(user, "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeee");
         if (!user) {
-            next({ status: 404, message: "Not found." , error});
+            next({ status: 404, message: "Not found.", error });
         }
+
         res.status(200).json(user);
     } catch (error) {
         next({ status: 500, message: "Invalid userId provided!", error });
@@ -35,7 +41,7 @@ const user_post = async (req, res, next) => {
         // Create a Todo
         const user = await UserModel.create(data);
         if (!user) {
-            next({ status: 404, message: "Failed to create user." , error});
+            next({ status: 404, message: "Failed to create user.", error });
         }
         res.status(201).json(user);
     } catch (error) {

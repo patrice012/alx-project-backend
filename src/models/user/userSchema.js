@@ -56,14 +56,14 @@ const UserSchema = Schema(
 );
 
 /* Remove password and token in query results */
-// UserSchema.set("toJSON", {
-//     virtuals: true,
-//     transform: function (doc, ret, options) {
-//         delete ret.password;
-//         delete ret.tokens;
-//         return ret;
-//     },
-// });
+UserSchema.set("toJSON", {
+    virtuals: true,
+    transform: function (doc, ret, options) {
+        delete ret.password;
+        delete ret.tokens;
+        return ret;
+    },
+});
 
 /* ATTACH CUSTOM STATIC METHODS */
 
@@ -137,6 +137,26 @@ UserSchema.methods.generateResetToken = async function () {
     await user.save();
 
     return resetToken;
+};
+
+/* SOME HELPER FUNCTION */
+UserSchema.methods.getAllTweets = async function () {
+    const user = this;
+    const tweets = await Tweet.find({ userId: user._id })
+        .select("-__v")
+        .lean(true);
+    return tweets;
+};
+
+UserSchema.methods.getAllreTweets = async function () {
+    const user = this;
+    const retweets = await Retweet.find({ userId: user._id })
+        .select("-__v")
+        .populate("tweetId")
+        .select("-__v")
+        .lean(true);
+    // this.retweets = retweets;
+    return retweets;
 };
 
 /* ATTACH SOME MIDDLEWARE FONCTION */

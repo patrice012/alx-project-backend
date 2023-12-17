@@ -25,7 +25,7 @@ tweetRoute.get("/", tweet_list);
 
 tweetRoute.get("/:id", tweet_get);
 
-tweetRoute.use(authenticate);
+// tweetRoute.use(authenticate);
 
 tweetRoute.post("/", validator(tweetValidationSchema), tweet_post);
 

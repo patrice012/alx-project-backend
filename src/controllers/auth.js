@@ -26,8 +26,8 @@ const register = async (req, res, next) => {
             email,
             password: password,
         });
-        const accessToken = await newUser.generateAcessToken(); // Create Access Token
-        const refreshToken = await newUser.generateRefreshToken(); // Create Refresh Token
+        const accessToken = await user.generateAcessToken(); // Create Access Token
+        const refreshToken = await user.generateRefreshToken(); // Create Refresh Token
 
         // SET refresh Token cookie in response
         res.cookie(
