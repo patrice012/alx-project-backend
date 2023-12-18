@@ -16,16 +16,15 @@ const user_get = async (req, res, next) => {
     const { id } = req.params;
     /* more logic here */
     try {
-        const user = await UserModel.findById(id);
+        let user = await UserModel.findById(id);
         const tweets = await user.getAllTweets();
         const reTweets = await user.getAllreTweets();
+        user = user.toJSON()
         user.tweets = tweets;
         user.reTweets = reTweets;
-        console.log(user, "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeee");
         if (!user) {
             next({ status: 404, message: "Not found.", error });
         }
-
         res.status(200).json(user);
     } catch (error) {
         next({ status: 500, message: "Invalid userId provided!", error });

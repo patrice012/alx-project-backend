@@ -65,8 +65,7 @@ UserSchema.set("toJSON", {
     },
 });
 
-/* ATTACH CUSTOM STATIC METHODS */
-
+/* ATTACH CUSTOM STATIC METHODS FOR AUTH */
 // Compare the given password with the hashed password in the database
 UserSchema.methods.comparePassword = async function (password) {
     return bcrypt.compare(password, this.password);
@@ -108,11 +107,9 @@ UserSchema.methods.generateRefreshToken = async function () {
         .createHmac("sha256", REFRESH_TOKEN.secret)
         .update(refreshToken)
         .digest("hex");
-
     // Save 'refresh token hash' to database
     user.tokens.push({ token: refreshTokenHash });
     await user.save();
-
     return refreshToken;
 };
 
@@ -120,22 +117,17 @@ UserSchema.methods.generateResetToken = async function () {
     const resetTokenValue = crypto.randomBytes(20).toString("base64url");
     const resetTokenSecret = crypto.randomBytes(10).toString("hex");
     const user = this;
-
     // Separator of `+` because generated base64url characters doesn't include this character
     const resetToken = `${resetTokenValue}+${resetTokenSecret}`;
-
     // Create a hash
     const resetTokenHash = crypto
         .createHmac("sha256", resetTokenSecret)
         .update(resetTokenValue)
         .digest("hex");
-
     user.resetpasswordtoken = resetTokenHash;
     user.resetpasswordtokenexpiry =
         Date.now() + (RESET_PASSWORD_TOKEN.expiry || 5) * 60 * 1000; // Sets expiration age
-
     await user.save();
-
     return resetToken;
 };
 
@@ -159,6 +151,10 @@ UserSchema.methods.getAllreTweets = async function () {
     return retweets;
 };
 
+UserSchema.methods.getComments = async function () {
+    
+}
+
 /* ATTACH SOME MIDDLEWARE FONCTION */
 /* Change _id into id */
 UserSchema.method("toJSON", function () {
@@ -171,12 +167,9 @@ UserSchema.pre("save", async function (next) {
     // this === user
     // Only run this function if password was moddified (not on other update functions)
     if (!this.isModified("password")) return next();
-
     try {
         const salt = await bcrypt.genSalt(10);
         this.password = await bcrypt.hash(this.password, salt);
-        console.log(this.password, "user.password");
-
         next();
     } catch (error) {
         return next(error);
@@ -190,7 +183,6 @@ UserSchema.post("findOneAndDelete", async function () {
     const retweets = await Retweet.deleteMany({ userId: id });
     const tweets = await Tweet.deleteMany({ userId: id });
     const profile = await Profile.deleteOne({ userId: id });
-    console.log(comments, tweets, profile, retweets);
 });
 
 // create user related profile
@@ -205,7 +197,6 @@ UserSchema.post("save", async function () {
     });
     if (!profile) {
         profile = await Profile.create(payload);
-        console.log(profile, "profile");
     }
 });
 
@@ -225,7 +216,6 @@ UserSchema.post("findOneAndUpdate", async function () {
         payload,
         options
     );
-    console.log(profile);
 });
 
 // module.exports = UserSchema;

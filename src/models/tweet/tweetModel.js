@@ -33,6 +33,11 @@ const TweetSchema = Schema(
     }
 );
 
+
+TweetSchema.method.getComments = function () {
+    /* logic here */
+}
+
 TweetSchema.method("toJSON", function () {
     const { __v, _id, ...object } = this.toObject();
     object.id = _id;
