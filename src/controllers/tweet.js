@@ -19,19 +19,14 @@ const tweet_get = async (req, res, next) => {
     const { id } = req.params;
     /* more logic here */
     try {
-        const tweet = await Tweet.findById(id)
-            .populate("userId", "-__v")
-            .lean(true);
+        let tweet = await Tweet.findById(id).populate("userId", "-__v");
         if (!tweet) {
             next({ status: 404, message: "Not found.", error });
         }
         /* get all comments if exists */
-        comments = await CommentModel.find({ tweetId: id })
-            .populate("userId", "-__v")
-            .lean(true);
-        if (comments) {
-            tweet.comments = comments;
-        }
+        comments = await tweet.getComments();
+        tweet = tweet.toJSON();
+        tweet.comments = comments || [];
         res.status(200).json(tweet);
     } catch (error) {
         next({ status: 500, message: "Invalid tweetId provided!", error });

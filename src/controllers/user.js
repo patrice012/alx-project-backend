@@ -20,8 +20,8 @@ const user_get = async (req, res, next) => {
         const tweets = await user.getAllTweets();
         const reTweets = await user.getAllreTweets();
         user = user.toJSON()
-        user.tweets = tweets;
-        user.reTweets = reTweets;
+        user.tweets = tweets || [];
+        user.reTweets = reTweets || [];
         if (!user) {
             next({ status: 404, message: "Not found.", error });
         }
