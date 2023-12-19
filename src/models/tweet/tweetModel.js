@@ -33,10 +33,13 @@ const TweetSchema = Schema(
     }
 );
 
-
-TweetSchema.method.getComments = function () {
-    /* logic here */
-}
+TweetSchema.methods.getComments = async function () {
+    const tweet = this;
+    const comments = await CommentModel.find({ tweetId: tweet._id })
+        .populate("userId", "-__v")
+        .lean(true);
+    return comments;
+};
 
 TweetSchema.method("toJSON", function () {
     const { __v, _id, ...object } = this.toObject();

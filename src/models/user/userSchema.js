@@ -147,13 +147,15 @@ UserSchema.methods.getAllreTweets = async function () {
         .populate("tweetId")
         .select("-__v")
         .lean(true);
-    // this.retweets = retweets;
     return retweets;
 };
 
-UserSchema.methods.getComments = async function () {
-    
-}
+UserSchema.methods.getAllComments = async function () {
+    const comments = await CommentModel.find({ userId: this._id })
+        .select("-__v")
+        .lean(true);
+    return comments;
+};
 
 /* ATTACH SOME MIDDLEWARE FONCTION */
 /* Change _id into id */
