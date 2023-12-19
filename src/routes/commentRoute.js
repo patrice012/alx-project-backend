@@ -13,7 +13,7 @@ const {
     comment_put,
 } = require("../controllers/comment");
 
-commentRoute.use(authenticate);
+// commentRoute.use(authenticate);
 
 commentRoute.get("/", comment_list);
 
