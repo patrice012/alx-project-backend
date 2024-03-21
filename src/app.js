@@ -3,9 +3,7 @@ const morgan = require("morgan");
 // const cors = require("cors");
 const db = require("./config/db");
 const { PORT } = require("./config/config");
-const userRoute = require("./routes/userRoute");
-const tweetRoute = require("./routes/tweetRoute");
-const authRoutes = require("./routes/auth");
+const router = require("./routes");
 const errorHandler = require("./error/error");
 
 const app = express();
@@ -23,9 +21,7 @@ app.use(morgan("dev"));
 db.connect();
 
 // Define authentication routes
-app.use('/auth', authRoutes);
-app.use("/tweet", tweetRoute);
-app.use("/", userRoute);
+app.use("/api/v1", router);
 
 app.all("/*", (req, res) => {
     res.status(404).json({ error: "invalid endpoint." });
