@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 
+const Discussion = require("../discussion/discussion.model");
+
 const MessageSchema = new mongoose.Schema(
   {
     typeOf: {
@@ -20,18 +22,16 @@ const MessageSchema = new mongoose.Schema(
       require: true,
     },
 
-    senderName: {
-      type: String,
-    },
-
     receiverId: {
       type: mongoose.ObjectId,
       ref: "User",
       require: true,
     },
 
-    receiverName: {
-      type: String,
+    discussionId: {
+      type: mongoose.ObjectId,
+      ref: "Discussion",
+      require: true,
     },
 
     isView: {
@@ -42,6 +42,7 @@ const MessageSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: ["PUBLISH", "PENDING"],
+      default: "PENDING",
     },
   },
   {
@@ -52,12 +53,37 @@ const MessageSchema = new mongoose.Schema(
   }
 );
 
-const MessageModel = mongoose.model("Message", MessageSchema);
 
-MessageModel.method("toJSON", function () {
+MessageSchema.method("toJSON", function () {
   const { __v, _id, ...object } = this.toObject();
   object.id = _id;
   return object;
 });
 
+
+/* create discussion if not exits before saving the message */
+MessageSchema.pre("save", async function (next) {
+  const senderId = this["senderId"];
+  const receiverId = this["receiverId"];
+  const discussionId = this["discussionId"];
+
+  try {
+    if (!discussionId) {
+      const disc = await Discussion.create({ senderId, receiverId });
+      this["discussionId"] = disc["_id"];
+    } else if (discussionId) {
+      const disc = await Discussion.findOne({ _id: discussionId });
+      if (!disc) {
+        const disc = await Discussion.create({ senderId, receiverId });
+        this["discussionId"] = disc["_id"];
+      }
+    }
+  } catch (error) {
+    console.log(error);
+  } finally {
+    next();
+  }
+});
+
+const MessageModel = mongoose.model("Message", MessageSchema);
 module.exports = MessageModel;
