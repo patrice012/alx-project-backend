@@ -14,7 +14,7 @@ const bindUserIdToRequest = (req, res, next) => {
 
 userRoute.use("/:id/retweet", bindUserIdToRequest, retweetRoute);
 
-userRoute.get("/", user_list);
+userRoute.get("/", UserController.user_list);
 
 userRoute.post("/", validator(userValidationSchema), UserController.user_post);
 
