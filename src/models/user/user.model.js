@@ -1,11 +1,16 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+
 const Schema = mongoose.Schema;
+
 const CommentModel = require("../comments/comment.model");
 const Tweet = require("../tweet/tweet.model");
 const Profile = require("../profile/profile.model");
 const Retweet = require("../retweet/reTweet.model");
+const Discussion = require("../discussion/discussion.model");
+const Message = require("../messages/message.model");
+
 const { ACCESS_TOKEN, REFRESH_TOKEN } = require("../../config/config");
 const crypto = require("crypto");
 
@@ -164,6 +169,7 @@ UserSchema.method("toJSON", function () {
   return object;
 });
 
+/* update password field if changed */
 UserSchema.pre("save", async function (next) {
   // this === user
   // Only run this function if password was moddified (not on other update functions)
@@ -175,15 +181,6 @@ UserSchema.pre("save", async function (next) {
   } catch (error) {
     return next(error);
   }
-});
-
-/* delete all related comments, tweets and profile */
-UserSchema.post("findOneAndDelete", async function () {
-  const id = this.getQuery()["_id"].toString();
-  const comments = await CommentModel.deleteMany({ userId: id });
-  const retweets = await Retweet.deleteMany({ userId: id });
-  const tweets = await Tweet.deleteMany({ userId: id });
-  const profile = await Profile.deleteOne({ userId: id });
 });
 
 // create user related profile
@@ -201,6 +198,17 @@ UserSchema.post("save", async function () {
   }
 });
 
+/* delete all related comments, retweets, tweets, discussions and profile */
+UserSchema.post("findOneAndDelete", async function () {
+  const id = this.getQuery()["_id"].toString();
+  const comments = await CommentModel.deleteMany({ userId: id });
+  const retweets = await Retweet.deleteMany({ userId: id });
+  const tweets = await Tweet.deleteMany({ userId: id });
+  const profile = await Profile.deleteOne({ userId: id });
+  // const messages = await Message.deleteOne({ userId: id });
+  const disc = await Discussion.deleteMany({ senderId: id });
+});
+
 /* update profile information */
 UserSchema.post("findOneAndUpdate", async function () {
   /* get user id */
@@ -213,6 +221,7 @@ UserSchema.post("findOneAndUpdate", async function () {
   if (updateValues.username) payload["name"] = updateValues.username;
   if (updateValues.email) payload["email"] = updateValues.email;
   const profile = await Profile.findOneAndUpdate(conditions, payload, options);
+  await Discussion.updateMany({ senderId: id }, { sender: profile.name });
 });
 
 // module.exports = UserSchema;

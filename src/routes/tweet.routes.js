@@ -26,7 +26,7 @@ tweetRoute.post(
   TweetController.tweet_post
 );
 
-tweetRoute.delete("/:id", tweet_delete);
+tweetRoute.delete("/:id", TweetController.tweet_delete);
 
 tweetRoute.put(
   "/:id",
