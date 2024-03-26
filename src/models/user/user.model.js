@@ -221,6 +221,7 @@ UserSchema.post("findOneAndUpdate", async function () {
   if (updateValues.username) payload["name"] = updateValues.username;
   if (updateValues.email) payload["email"] = updateValues.email;
   const profile = await Profile.findOneAndUpdate(conditions, payload, options);
+  await Discussion.updateMany({ senderId: id }, { sender: profile.name });
 });
 
 // module.exports = UserSchema;

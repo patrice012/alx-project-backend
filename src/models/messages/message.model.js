@@ -8,6 +8,7 @@ const MessageSchema = new mongoose.Schema(
       type: String,
       enum: ["text", "docs", "img", "file"],
       require: true,
+      default: "text",
     },
     message: {
       type: String,
@@ -29,9 +30,7 @@ const MessageSchema = new mongoose.Schema(
     },
 
     discussionId: {
-      type: mongoose.ObjectId,
-      ref: "Discussion",
-      require: true,
+      type: String,
     },
 
     isView: {
@@ -53,13 +52,11 @@ const MessageSchema = new mongoose.Schema(
   }
 );
 
-
 MessageSchema.method("toJSON", function () {
   const { __v, _id, ...object } = this.toObject();
   object.id = _id;
   return object;
 });
-
 
 /* create discussion if not exits before saving the message */
 MessageSchema.pre("save", async function (next) {
@@ -69,13 +66,24 @@ MessageSchema.pre("save", async function (next) {
 
   try {
     if (!discussionId) {
-      const disc = await Discussion.create({ senderId, receiverId });
+      const disc = await Discussion.create({
+        senderId,
+        receiverId,
+        lastMessage: this["message"],
+      });
       this["discussionId"] = disc["_id"];
     } else if (discussionId) {
       const disc = await Discussion.findOne({ _id: discussionId });
       if (!disc) {
-        const disc = await Discussion.create({ senderId, receiverId });
+        const disc = await Discussion.create({
+          senderId,
+          receiverId,
+          lastMessage: this["message"],
+        });
         this["discussionId"] = disc["_id"];
+      } else {
+        disc["lastMessage"] = this["message"];
+        await disc.save();
       }
     }
   } catch (error) {
