@@ -2,6 +2,28 @@ const UserModel = require("../../models/user/user.model");
 const Profile = require("../../models/profile/profile.model");
 const Message = require("../../models/messages/message.model");
 const Discussion = require("../../models/discussion/discussion.model");
+const jwt = require("jsonwebtoken");
+const { ACCESS_TOKEN } = require("../../config/config");
+
+const verifyUser = async (token) => {
+  try {
+    const staleAccessTkn = token.split(" ")[1];
+    const decodedExpiredAccessTkn = jwt.verify(
+      staleAccessTkn,
+      ACCESS_TOKEN.secret,
+      {
+        ignoreExpiration: true,
+      }
+    );
+    const tokenUser = await UserModel.findOne({
+      _id: decodedExpiredAccessTkn.userId,
+    })
+      .lean(true);
+    return {id: tokenUser._id, username: tokenUser.username, email: tokenUser.email};
+  } catch (error) {
+    throw new Error(error);
+  }
+};
 
 const createMessage = async (data) => {
   try {
@@ -73,6 +95,7 @@ const getDiscussionMessageList = async (id) => {
 };
 
 module.exports = {
+  verifyUser,
   getProfile,
   getUser,
   createMessage,

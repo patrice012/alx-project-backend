@@ -3,7 +3,7 @@ const bcrypt = require("bcrypt");
 const UserModel = require("../models/user/user.model");
 const { ACCESS_TOKEN, RESET_PASSWORD_TOKEN } = require("../config/config");
 
-const REFRESH_TOKEN = {
+const COOKIE_REFRESH_TOKEN = {
   // ...
   cookie: {
     name: "refreshToken",
@@ -11,10 +11,36 @@ const REFRESH_TOKEN = {
       sameSite: "None",
       secure: true,
       httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000,
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     },
   },
 };
+
+const COOKIE_ACCESS_TOKEN = {
+  // ...
+  cookie: {
+    name: "accessToken",
+    options: {
+      sameSite: "None",
+      secure: true,
+      httpOnly: true,
+      maxAge: 3600000, // 1 hour
+    },
+  },
+};
+
+function setAuthCookies(res, refreshToken, accessToken) {
+  res.cookie(
+    COOKIE_REFRESH_TOKEN.cookie.name,
+    refreshToken,
+    COOKIE_REFRESH_TOKEN.cookie.options
+  );
+  res.cookie(
+    COOKIE_ACCESS_TOKEN.cookie.name,
+    accessToken,
+    COOKIE_ACCESS_TOKEN.cookie.options
+  );
+}
 
 class AuthController {
   // Register a new user
@@ -32,14 +58,23 @@ class AuthController {
 
       // SET refresh Token cookie in response
       res.cookie(
-        REFRESH_TOKEN.cookie.name,
+        COOKIE_REFRESH_TOKEN.cookie.name,
         refreshToken,
-        REFRESH_TOKEN.cookie.options
+        COOKIE_REFRESH_TOKEN.cookie.options
+      );
+      res.cookie(
+        COOKIE_ACCESS_TOKEN.cookie.name,
+        accessToken,
+        COOKIE_ACCESS_TOKEN.cookie.options
       );
       // Send Response on successful Sign Up
       res.status(201).json({
         success: true,
-        user: user,
+        user: {
+          id: user._id,
+          username: user.username,
+          email: user.email,
+        },
         accessToken,
       });
       // res.json({ message: "Registration successful", user });
@@ -51,7 +86,6 @@ class AuthController {
   // Login with an existing user
   static async login(req, res, next) {
     const { username, password } = req.body;
-
     try {
       // Identify and retrieve user by credentials
       const user = await UserModel.findByCredentials(username, password);
@@ -59,11 +93,24 @@ class AuthController {
       const refreshToken = await user.generateRefreshToken(); // Create Refresh Token
       // SET refresh Token cookie in response
       res.cookie(
-        REFRESH_TOKEN.cookie.name,
+        COOKIE_REFRESH_TOKEN.cookie.name,
         refreshToken,
-        REFRESH_TOKEN.cookie.options
+        COOKIE_REFRESH_TOKEN.cookie.options
       );
-      res.json({ accessToken: accessToken, refreshToken: refreshToken });
+      res.cookie(
+        COOKIE_ACCESS_TOKEN.cookie.name,
+        accessToken,
+        COOKIE_ACCESS_TOKEN.cookie.options
+      );
+      res.json({
+        accessToken: accessToken,
+        refreshToken: refreshToken,
+        user: {
+          id: user._id,
+          username: user.username,
+          email: user.email,
+        },
+      });
     } catch (error) {
       next(error);
     }
@@ -77,10 +124,10 @@ class AuthController {
 
       const cookies = req.cookies;
       const authHeader = req.header("Authorization");
-      const refreshToken = cookies[REFRESH_TOKEN.cookie.name];
+      const refreshToken = cookies[COOKIE_REFRESH_TOKEN.cookie.name];
       // Create a access token hash
       const refreshTokenHash = crypto
-        .createHmac("sha256", REFRESH_TOKEN.secret)
+        .createHmac("sha256", COOKIE_REFRESH_TOKEN.secret)
         .update(refreshToken)
         .digest("hex");
       user.tokens = user.tokens.filter(
@@ -91,14 +138,14 @@ class AuthController {
       // Set cookie expiry to past date so it is destroyed
       const expireCookieOptions = Object.assign(
         {},
-        REFRESH_TOKEN.cookie.options,
+        COOKIE_REFRESH_TOKEN.cookie.options,
         {
           expires: new Date(1),
         }
       );
 
       // Destroy refresh token cookie
-      res.cookie(REFRESH_TOKEN.cookie.name, "", expireCookieOptions);
+      res.cookie(COOKIE_REFRESH_TOKEN.cookie.name, "", expireCookieOptions);
       res.status(205).json({
         success: true,
       });
@@ -120,14 +167,14 @@ class AuthController {
       // Set cookie expiry to past date to mark for destruction
       const expireCookieOptions = Object.assign(
         {},
-        REFRESH_TOKEN.cookie.options,
+        COOKIE_REFRESH_TOKEN.cookie.options,
         {
           expires: new Date(1),
         }
       );
 
       // Destroy refresh token cookie
-      res.cookie(REFRESH_TOKEN.cookie.name, "", expireCookieOptions);
+      res.cookie(COOKIE_REFRESH_TOKEN.cookie.name, "", expireCookieOptions);
       res.status(205).json({
         success: true,
       });
@@ -142,7 +189,7 @@ class AuthController {
       const cookies = req.cookies;
       const authHeader = req.header("Authorization");
 
-      if (!cookies[REFRESH_TOKEN.cookie.name]) {
+      if (!cookies[COOKIE_REFRESH_TOKEN.cookie.name]) {
         throw new Error("Authentication error! You are unauthenticated");
       }
       if (!authHeader?.startsWith("Bearer ")) {
@@ -160,8 +207,11 @@ class AuthController {
         }
       );
 
-      const refreshToken = cookies[REFRESH_TOKEN.cookie.name];
-      const decodedRefreshTkn = jwt.verify(refreshToken, REFRESH_TOKEN.secret);
+      const refreshToken = cookies[COOKIE_REFRESH_TOKEN.cookie.name];
+      const decodedRefreshTkn = jwt.verify(
+        refreshToken,
+        COOKIE_REFRESH_TOKEN.secret
+      );
 
       const userWithRefreshTkn = await User.findOne({
         _id: decodedRefreshTkn._id,
@@ -171,7 +221,7 @@ class AuthController {
         throw new Error("Authentication error! You are unauthenticated");
       }
       // Delete the stale access token
-      console.log("Removing Stale access tkn from DB in refresh handler...");
+      console.log("Removing Stale access token from DB in refresh handler...");
       userWithRefreshTkn.tokens = userWithRefreshTkn.tokens.filter(
         (tokenObj) => tokenObj.token !== staleAccessTkn
       );
