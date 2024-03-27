@@ -1,21 +1,44 @@
 const express = require("express");
 const morgan = require("morgan");
-// const cors = require("cors");
+const cors = require("cors");
 const db = require("./config/db");
-const { PORT } = require("./config/config");
+const { PORT, NODE_ENV, DOMAIN } = require("./config/config");
 const router = require("./routes");
 const errorHandler = require("./error/error");
 
 const app = express();
+
+// cors
+let alloweds = {
+  origin: [DOMAIN],
+};
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Check if the origin is allowed
+      if (alloweds.origin.includes(origin)) {
+        callback(null, true);
+      } else {
+        // callback(new Error("Not allowed by CORS"));
+        callback(null, true);
+      }
+    },
+    credentials: true,
+    optionSuccessStatus: 200,
+  })
+);
+
+if (NODE_ENV === "development") {
+  // log using Morgan
+  const morgan = require("morgan");
+  app.use(morgan("dev"));
+}
 
 // parse requests of content-type - application/json
 app.use(express.json());
 
 // parse requests of content-type - application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: false }));
-
-// log using Morgan
-app.use(morgan("dev"));
 
 // connect to DB
 db.connect();
@@ -40,12 +63,13 @@ const server = app.listen(port, () => {
 const io = require("socket.io")(server, {
   pingTimeout: 60000,
   cors: {
-    origin: "http://localhost:3000",
+    origin: DOMAIN,
     // credentials: true,
   },
 });
 
 const {
+  verifyUser,
   getUser,
   createMessage,
   getUserDiscussionList,
@@ -55,12 +79,20 @@ const {
 } = require("./api/websocket/handlers");
 
 io.on("connection", (socket) => {
-  console.log("Connected to socket.io");
-  socket.on("setup", (data) => {
-    socket.join(data.userId);
-    socket.emit("connected");
-    // socket.broadcast.emit("connected");
-  });
+  // console.log("Connected to socket.io");
+  const authHeader = socket?.handshake?.headers?.authorization;
+
+  verifyUser(authHeader)
+    .then((user) => {
+      socket["user"] = user;
+      socket.emit("logged", { user });
+      socket.join(user.id);
+    })
+    .catch((err) => {
+      console.log("Error", err);
+      socket.emit("login", { error: err });
+      socket.disconnect();
+    });
 
   socket.on("userOnline", (data) => {
     console.log("userOnline", data);
@@ -99,7 +131,6 @@ io.on("connection", (socket) => {
     console.log("newDiscussion", data);
     if (data.discussionId) {
       const disc = await getDiscussion(data.discussionId);
-      // const user = await getUserDiscussionList(data.userId);
       socket.emit("newDiscussion", { newDiscussion: disc });
     } else {
       console.log("User not found");
@@ -161,5 +192,3 @@ io.on("connection", (socket) => {
     socket.leave(userData._id);
   });
 });
-
-// module.exports = io;
