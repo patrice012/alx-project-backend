@@ -17,9 +17,12 @@ const verifyUser = async (token) => {
     );
     const tokenUser = await UserModel.findOne({
       _id: decodedExpiredAccessTkn.userId,
-    })
-      .lean(true);
-    return {id: tokenUser._id, username: tokenUser.username, email: tokenUser.email};
+    }).lean(true);
+    return {
+      id: tokenUser._id,
+      username: tokenUser.username,
+      email: tokenUser.email,
+    };
   } catch (error) {
     throw new Error(error);
   }
@@ -34,10 +37,26 @@ const createMessage = async (data) => {
   }
 };
 
+const findUser = async (data) => {
+  try {
+    if (data.username) {
+      return await UserModel.findOne({ username: data.username.trim() })
+        .select({ username: 1, email: 1, _id: 1, created_at: 1, updated_at: 1 })
+        .lean(true);
+    } else if (data.email) {
+      return await UserModel.findOne({ email: data.email.trim() })
+        .select({ username: 1, email: 1, _id: 1, created_at: 1, updated_at: 1 })
+        .lean(true);
+    }
+  } catch (error) {
+    throw new Error(error);
+  }
+};
+
 const getUser = async (id) => {
   try {
     return await UserModel.findById({ _id: id })
-      .select("-password, -__v")
+      .select({ username: 1, email: 1, _id: 1, created_at: 1, updated_at: 1 })
       .lean(true);
   } catch (error) {
     throw new Error(error);
@@ -94,6 +113,28 @@ const getDiscussionMessageList = async (id) => {
   }
 };
 
+const createDiscussion = async (data) => {
+  try {
+    const discussion = new Discussion(data);
+    return await discussion.save();
+  } catch (error) {
+    throw new Error(error);
+  }
+};
+
+const getUserConnections = async (id) => {
+  try {
+    console.log("getUserConnections::", id);
+    const disc = await Discussion.find({ senderId: id })
+      .select({ receiverId: 1 })
+      .sort({ updated_at: -1 })
+      .lean(true);
+    return disc;
+  } catch (error) {
+    throw new Error(error);
+  }
+};
+
 module.exports = {
   verifyUser,
   getProfile,
@@ -103,4 +144,7 @@ module.exports = {
   getUserDiscussionList,
   getOnlineUsers,
   getDiscussionMessageList,
+  findUser,
+  createDiscussion,
+  getUserConnections
 };

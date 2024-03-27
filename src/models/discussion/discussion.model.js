@@ -24,9 +24,9 @@ const DiscussionSchema = new mongoose.Schema(
       require: true,
     },
 
-    // receiver: {
-    //   type: String,
-    // },
+    receiver: {
+      type: String,
+    },
 
     lastMessage: {
       type: String,
@@ -72,9 +72,9 @@ DiscussionSchema.pre("save", async function (next) {
       this["sender"] = (
         await Profile.findOne({ userId: this["senderId"] }).lean(true)
       ).name;
-      // this["receiver"] = (
-      //   await Profile.findOne({ userId: this["receiverId"] }).lean(true)
-      // ).name;
+      this["receiver"] = (
+        await Profile.findOne({ userId: this["receiverId"] }).lean(true)
+      ).name;
     }
   } catch (error) {
     console.log(error);
