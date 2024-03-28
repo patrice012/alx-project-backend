@@ -24,7 +24,7 @@ const verifyUser = async (token) => {
       email: tokenUser.email,
     };
   } catch (error) {
-    throw new Error(error);
+    throw error;
   }
 };
 
@@ -113,6 +113,20 @@ const getDiscussionMessageList = async (id) => {
   }
 };
 
+const findDiscussion = async (data) => {
+  try {
+    const disc = await Discussion.findOne({
+      $or: [
+        { senderId: data.senderId, receiverId: data.receiverId },
+        { senderId: data.receiverId, receiverId: data.senderId },
+      ],
+    });
+    return disc;
+  } catch (error) {
+    throw new Error(error);
+  }
+};
+
 const createDiscussion = async (data) => {
   try {
     const discussion = new Discussion(data);
@@ -124,7 +138,6 @@ const createDiscussion = async (data) => {
 
 const getUserConnections = async (id) => {
   try {
-    console.log("getUserConnections::", id);
     const disc = await Discussion.find({ senderId: id })
       .select({ receiverId: 1 })
       .sort({ updated_at: -1 })
@@ -146,5 +159,6 @@ module.exports = {
   getDiscussionMessageList,
   findUser,
   createDiscussion,
-  getUserConnections
+  getUserConnections,
+  findDiscussion,
 };

@@ -51,7 +51,7 @@ DiscussionSchema.index({ created_at: -1 });
 
 DiscussionSchema.method("toJSON", function () {
   const { __v, _id, ...object } = this.toObject();
-  object.id = _id;
+  object._id = _id;
   return object;
 });
 
