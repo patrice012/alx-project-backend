@@ -165,7 +165,7 @@ UserSchema.methods.getAllComments = async function () {
 /* Change _id into id */
 UserSchema.method("toJSON", function () {
   const { __v, _id, ...object } = this.toObject();
-  object.id = _id;
+  object._id = _id;
   return object;
 });
 
