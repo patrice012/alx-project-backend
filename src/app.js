@@ -1,6 +1,7 @@
 const express = require("express");
 const morgan = require("morgan");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
 const db = require("./config/db");
 const { PORT, NODE_ENV, DOMAIN } = require("./config/config");
 const router = require("./routes");
@@ -33,6 +34,8 @@ if (NODE_ENV === "development") {
   const morgan = require("morgan");
   app.use(morgan("dev"));
 }
+
+app.use(cookieParser());
 
 // parse requests of content-type - application/json
 app.use(express.json());
@@ -80,10 +83,11 @@ const {
   createDiscussion,
   getUserConnections,
   findDiscussion,
+  updateMessageReactions,
 } = require("./api/websocket/handlers");
 
 io.on("connection", (socket) => {
-  // console.log("Connected to socket.io");
+  console.log("Connected to socket.io");
   const authHeader = socket?.handshake?.headers?.authorization;
 
   try {
@@ -108,21 +112,21 @@ io.on("connection", (socket) => {
           .catch((err) => {
             socket.emit("login", {
               message: "Login successful but failed to join connections rooms",
-              error: err,
+              error: err.message,
             });
           });
       })
       .catch((err) => {
         socket.emit("login", {
           message: "Failed to authenticate user",
-          error: err,
+          error: err.message?.message,
         });
         socket.disconnect();
       });
   } catch (err) {
     socket.emit("login", {
       message: "Failed to authenticate user",
-      error: err,
+      error: err.message,
     });
     socket.disconnect();
   }
@@ -151,7 +155,7 @@ io.on("connection", (socket) => {
     } catch (err) {
       socket.emit("joinChat", {
         message: "Failed to join chat room",
-        error: err,
+        error: err.message,
       });
     }
   });
@@ -164,7 +168,7 @@ io.on("connection", (socket) => {
     } catch (err) {
       socket.emit("leaveChat", {
         message: "Failed to leave chat room",
-        error: err,
+        error: err.message,
       });
     }
   });
@@ -186,7 +190,7 @@ io.on("connection", (socket) => {
     } catch (err) {
       socket.emit("typing", {
         message: "Failed to send typing message",
-        error: err,
+        error: err.message,
       });
     }
   });
@@ -199,7 +203,7 @@ io.on("connection", (socket) => {
     } catch (err) {
       socket.emit("typing", {
         message: "Failed to stop typing",
-        error: err,
+        error: err.message,
       });
     }
   });
@@ -220,8 +224,34 @@ io.on("connection", (socket) => {
       socket.emit("newMessage", {
         newMessage: {},
         message: "Failed to send message",
-        error: err,
+        error: err.message,
       });
+    }
+  });
+
+  socket.on("messageReaction", async (data) => {
+    try {
+      const { msgId, reaction, discId, senderId } = data;
+
+      if (!msgId && reaction) {
+        socket.emit("messageReaction", {
+          newMessage: {},
+          message: "Something went wrong",
+          error: "Failed to send message reactions",
+        });
+      }
+
+      const newMsg = await updateMessageReactions({ ...data });
+      // send message to receiver like push notification
+      socket.broadcast.emit("newMessage", { newMessage: newMsg });
+
+      // display the message to the receiver if already in the chat room
+      const messages = await getDiscussionMessageList(newMsg.discussionId);
+      io.to(newMsg.discussionId).emit("newChatMessage", {
+        discussionMessageList: messages,
+      });
+    } catch (error) {
+      console.log(error);
     }
   });
 
@@ -243,7 +273,7 @@ io.on("connection", (socket) => {
       socket.emit("newDiscussion", {
         newDiscussion: {},
         message: "Failed to get discussion",
-        error: err,
+        error: err.message,
       });
     }
   });
@@ -294,7 +324,7 @@ io.on("connection", (socket) => {
             socket.emit("startNewDiscussion", {
               newDiscussion: {},
               message: "Failed to create discussion",
-              error: err,
+              error: err.message,
             });
           }
         } else {
@@ -315,13 +345,13 @@ io.on("connection", (socket) => {
       socket.emit("startNewDiscussion", {
         newDiscussion: {},
         message: "Failed to start discussion",
-        error: err,
+        error: err.message,
       });
     }
   });
 
   socket.on("discussionList", async (data) => {
-    console.log("discussionList", data);
+    // console.log("discussionList", data);
     try {
       if (data.userId || socket["user"].id.toString()) {
         const disc = await getUserDiscussionList(
@@ -340,7 +370,7 @@ io.on("connection", (socket) => {
       socket.emit("discussionList", {
         discussionList: [],
         message: "Failed to get discussion list",
-        error: err,
+        error: err.message,
       });
     }
   });
@@ -382,7 +412,7 @@ io.on("connection", (socket) => {
       socket.emit("discussionMessageList", {
         discussionMessageList: [],
         message: "Failed to get discussion message list",
-        error: err,
+        error: err.message,
       });
     }
   });
@@ -405,7 +435,7 @@ io.on("connection", (socket) => {
       socket.emit("OnlineUsers", {
         OnlineUsers: [],
         message: "Failed to get online users",
-        error: err,
+        error: err.message,
       });
     }
   });

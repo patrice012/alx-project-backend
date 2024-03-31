@@ -148,6 +148,26 @@ const getUserConnections = async (id) => {
   }
 };
 
+async function updateMessageReactions({ ...props }) {
+  try {
+    const { msgId, reaction, senderId, receiverId, discId } = props;
+    const data = await Message.findOne({ _id: msgId });
+    data.reactions = [...data.reactions, reaction];
+    await data.save();
+
+    const user = await UserModel.findOne({ _id: receiverId })
+      .select(["username"])
+      .lean(true);
+    const discussion = await Discussion.findOne({ _id: discId });
+    discussion.lastMessage = `${user.username} react with ${reaction}`;
+    discussion.save();
+
+    return data;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 module.exports = {
   verifyUser,
   getProfile,
@@ -161,4 +181,5 @@ module.exports = {
   createDiscussion,
   getUserConnections,
   findDiscussion,
+  updateMessageReactions,
 };

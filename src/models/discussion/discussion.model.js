@@ -55,15 +55,6 @@ DiscussionSchema.method("toJSON", function () {
   return object;
 });
 
-// DiscussionSchema.methods.getMessages = async function () {
-//   const disc = this;
-//   const messages = await Message.find({ discussionId: disc._id });
-//   return messages;
-// };
-
-// DiscussionSchema.static.getUnreadDiscussion = async function () {
-
-// }
 
 DiscussionSchema.pre("save", async function (next) {
   try {

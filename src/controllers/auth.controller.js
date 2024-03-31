@@ -43,6 +43,35 @@ function setAuthCookies(res, refreshToken, accessToken) {
 }
 
 class AuthController {
+
+  // check user state
+  static async verifyUser(req, res, next) {
+    try {
+      const { accessToken, refreshToken } = req.cookies;
+      console.log(req.cookies)
+      const decodedExpiredAccessTkn = jwt.verify(
+        accessToken,
+        ACCESS_TOKEN.secret,
+        {
+          ignoreExpiration: true,
+        }
+      );
+      const tokenUser = await UserModel.findOne({
+        _id: decodedExpiredAccessTkn.userId,
+      }).lean(true);
+      return res.status(200).json({
+        id: tokenUser._id,
+        username: tokenUser.username,
+        email: tokenUser.email,
+      });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(400)
+        .json({ message: "Something went wrong", error: error });
+    }
+  }
+
   // Register a new user
   static async register(req, res, next) {
     const { username, email, password } = req.body;

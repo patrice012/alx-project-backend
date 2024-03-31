@@ -2,6 +2,22 @@ const mongoose = require("mongoose");
 
 const Discussion = require("../discussion/discussion.model");
 
+const ReactionSchema = new mongoose.Schema(
+  {
+    value: String,
+    messageId: {
+      type: mongoose.ObjectId,
+      ref: "Message",
+    },
+  },
+  {
+    timestamps: {
+      createdAt: "created_at",
+      updatedAt: "updated_at",
+    },
+  }
+);
+
 const MessageSchema = new mongoose.Schema(
   {
     typeOf: {
@@ -96,4 +112,5 @@ MessageSchema.pre("save", async function (next) {
 });
 
 const MessageModel = mongoose.model("Message", MessageSchema);
+
 module.exports = MessageModel;
