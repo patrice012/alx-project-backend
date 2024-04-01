@@ -1,7 +1,12 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+const crypto = require("crypto");
 const UserModel = require("../models/user/user.model");
-const { ACCESS_TOKEN, RESET_PASSWORD_TOKEN } = require("../config/config");
+const {
+  ACCESS_TOKEN,
+  RESET_PASSWORD_TOKEN,
+  REFRESH_TOKEN,
+} = require("../config/config");
 
 const COOKIE_REFRESH_TOKEN = {
   // ...
@@ -29,9 +34,7 @@ const COOKIE_ACCESS_TOKEN = {
   },
 };
 
-
 class AuthController {
-
   // check user state
   static async verifyUser(req, res, next) {
     try {
@@ -132,36 +135,70 @@ class AuthController {
     }
   }
 
+  // static async logout(req, res, next) {
+  //   try {
+  //     // Authenticated user ID attached on `req` by authentication middleware
+  //     const userId = req.params.id;
+  //     const user = await UserModel.findById(userId);
+
+  //     const cookies = req.cookies;
+  //     console.log(cookies, 'cookies')
+  //     const authHeader = req.header("Authorization");
+  //     const refreshToken = cookies['refreshToken'];
+  //     // Create a access token hash
+  //     const refreshTokenHash = crypto
+  //       .createHmac("sha256", REFRESH_TOKEN.secret)
+  //       .update(refreshToken)
+  //       .digest("hex");
+  //     user.tokens = user.tokens.filter(
+  //       (tokenObj) => tokenObj.token !== refreshTokenHash
+  //     );
+  //     await user.save();
+
+  //     // Set cookie expiry to past date so it is destroyed
+  //     const expireCookieOptions = Object.assign(
+  //       {},
+  //       COOKIE_REFRESH_TOKEN.cookie.options,
+  //       {
+  //         expires: new Date(1),
+  //       }
+  //     );
+
+  //     // Destroy refresh token cookie
+  //     res.cookie(COOKIE_REFRESH_TOKEN.cookie.name, "", expireCookieOptions);
+  //     res.cookie(COOKIE_ACCESS_TOKEN.cookie.name, "", expireCookieOptions);
+  //     res.status(205).json({
+  //       success: true,
+  //     });
+  //   } catch (error) {
+  //     console.log(error);
+  //     next(error);
+  //   }
+  // }
+
   static async logout(req, res, next) {
     try {
-      // Authenticated user ID attached on `req` by authentication middleware
       const userId = req.params.id;
       const user = await UserModel.findById(userId);
 
       const cookies = req.cookies;
-      const authHeader = req.header("Authorization");
-      const refreshToken = cookies[COOKIE_REFRESH_TOKEN.cookie.name];
-      // Create a access token hash
+      const refreshToken = cookies["refreshToken"];
+
       const refreshTokenHash = crypto
-        .createHmac("sha256", COOKIE_REFRESH_TOKEN.secret)
+        .createHmac("sha256", REFRESH_TOKEN.secret)
         .update(refreshToken)
         .digest("hex");
+
       user.tokens = user.tokens.filter(
         (tokenObj) => tokenObj.token !== refreshTokenHash
       );
+
       await user.save();
 
-      // Set cookie expiry to past date so it is destroyed
-      const expireCookieOptions = Object.assign(
-        {},
-        COOKIE_REFRESH_TOKEN.cookie.options,
-        {
-          expires: new Date(1),
-        }
-      );
+      // Clear cookies by setting their expiry date to a past time
+      res.clearCookie(COOKIE_REFRESH_TOKEN.cookie.name);
+      res.clearCookie(COOKIE_ACCESS_TOKEN.cookie.name);
 
-      // Destroy refresh token cookie
-      res.cookie(COOKIE_REFRESH_TOKEN.cookie.name, "", expireCookieOptions);
       res.status(205).json({
         success: true,
       });
