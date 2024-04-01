@@ -91,7 +91,12 @@ MessageSchema.pre("save", async function (next) {
       });
       this["discussionId"] = disc["_id"];
     } else if (discussionId) {
-      const disc = await Discussion.findOne({ _id: discussionId });
+      const disc = await Discussion.findOne({
+        $or: [
+          { _id: discussionId },
+          { name: `${this["senderId"]}-${this["receiverId"]}-chat` },
+        ],
+      });
       if (!disc) {
         const disc = await Discussion.create({
           senderId,

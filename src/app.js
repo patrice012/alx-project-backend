@@ -84,6 +84,8 @@ const {
   getUserConnections,
   findDiscussion,
   updateMessageReactions,
+  getUnreadMsg,
+  resetUnreadMsg,
 } = require("./api/websocket/handlers");
 
 io.on("connection", (socket) => {
@@ -258,7 +260,7 @@ io.on("connection", (socket) => {
   // create new discussion
   socket.on("newDiscussion", async (data) => {
     try {
-      // console.log("newDiscussion", data);
+      console.log("newDiscussion", data);
       if (data.discussionId) {
         const disc = await getDiscussion(data.discussionId);
         socket.emit("newDiscussion", { newDiscussion: disc });
@@ -351,12 +353,13 @@ io.on("connection", (socket) => {
   });
 
   socket.on("discussionList", async (data) => {
-    // console.log("discussionList", data);
+    console.log("discussionList", data);
     try {
       if (data.userId || socket["user"].id.toString()) {
         const disc = await getUserDiscussionList(
           data.userId || socket["user"].id.toString()
         );
+
         socket.emit("discussionList", { discussionList: disc || [] });
       } else {
         socket.emit("discussionList", {
@@ -377,6 +380,7 @@ io.on("connection", (socket) => {
 
   socket.on("discussionMessageList", async (data) => {
     try {
+      console.log(data, "user data");
       // get user discussion message list
       if (data.discussionId) {
         const messages = await getDiscussionMessageList(data.discussionId);
@@ -387,7 +391,6 @@ io.on("connection", (socket) => {
         // set as active discussionMessageListso all incoming messages will be sent to this discussion
         socket.emit("activeDiscussion", { discussionId: data.discussionId });
 
-        // get receiver details to display in the chat
         const discussionId = data.discussionId;
         const disc = await getDiscussion(discussionId);
 
@@ -401,6 +404,15 @@ io.on("connection", (socket) => {
           const user = await getUser(disc.senderId);
           socket.emit("loadContactDetail", { contactDetail: user });
         }
+
+        // reset unreadmsg count
+        const userId = socket["user"].id.toString();
+        const values = await resetUnreadMsg({ discussionId, userId });
+        const discs = await getUserDiscussionList(
+          data.userId || socket["user"].id.toString()
+        );
+        socket.emit("discussionList", { discussionList: discs || [] });
+        socket.emit("unReadMessage", { unReadMessage: values });
       } else {
         socket.emit("discussionMessageList", {
           discussionMessageList: [],
@@ -414,6 +426,15 @@ io.on("connection", (socket) => {
         message: "Failed to get discussion message list",
         error: err.message,
       });
+    }
+  });
+
+  socket.on("unReadMessage", async (data) => {
+    try {
+      const values = await getUnreadMsg(data);
+      socket.emit("unReadMessage", { unReadMessage: values });
+    } catch (error) {
+      console.log(error);
     }
   });
 

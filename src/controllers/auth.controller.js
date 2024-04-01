@@ -29,18 +29,6 @@ const COOKIE_ACCESS_TOKEN = {
   },
 };
 
-function setAuthCookies(res, refreshToken, accessToken) {
-  res.cookie(
-    COOKIE_REFRESH_TOKEN.cookie.name,
-    refreshToken,
-    COOKIE_REFRESH_TOKEN.cookie.options
-  );
-  res.cookie(
-    COOKIE_ACCESS_TOKEN.cookie.name,
-    accessToken,
-    COOKIE_ACCESS_TOKEN.cookie.options
-  );
-}
 
 class AuthController {
 
@@ -48,7 +36,6 @@ class AuthController {
   static async verifyUser(req, res, next) {
     try {
       const { accessToken, refreshToken } = req.cookies;
-      console.log(req.cookies)
       const decodedExpiredAccessTkn = jwt.verify(
         accessToken,
         ACCESS_TOKEN.secret,
