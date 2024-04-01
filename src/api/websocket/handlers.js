@@ -2,6 +2,7 @@ const UserModel = require("../../models/user/user.model");
 const Profile = require("../../models/profile/profile.model");
 const Message = require("../../models/messages/message.model");
 const Discussion = require("../../models/discussion/discussion.model");
+const UnreadMessageModel = require("../../models/messages/unReadMsg.model");
 const jwt = require("jsonwebtoken");
 const { ACCESS_TOKEN } = require("../../config/config");
 
@@ -31,9 +32,83 @@ const verifyUser = async (token) => {
 const createMessage = async (data) => {
   try {
     const message = new Message(data);
+
+    const { senderId, receiverId, discussionId } = message;
+
+    const unReadMsg = await UnreadMessageModel.findOne({
+      discussionId: discussionId,
+    });
+
+    if (unReadMsg) {
+      if (senderId.toString() == unReadMsg?.sender?.id.toString()) {
+        unReadMsg.receiver.value = unReadMsg.receiver.value + 1;
+      } else if (senderId.toString() == unReadMsg?.receiver?.id.toString()) {
+        unReadMsg.sender.value = unReadMsg.sender.value + 1;
+      }
+      await unReadMsg.save();
+    } else {
+      await UnreadMessageModel.create({
+        discussionId: discussionId,
+        sender: {
+          id: senderId,
+          value: 0,
+        },
+        receiver: {
+          id: receiverId,
+          value: 1,
+        },
+      });
+    }
     return await message.save();
   } catch (error) {
+    console.log(error, "error");
     throw new Error(error);
+  }
+};
+
+const getUnreadMsg = async (data) => {
+  try {
+    const { discussionId, userId } = data;
+    const msg = await UnreadMessageModel.findOne({
+      discussionId: discussionId,
+    });
+    if (msg) {
+      if (msg?.sender.id.toString() == userId.toString()) {
+        return msg.sender.value;
+      } else if (msg?.receiver?.id.toString() == userId.toString()) {
+        return msg.receiver.value;
+      }
+    }
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
+
+const resetUnreadMsg = async (data) => {
+  try {
+    const { discussionId, userId } = data;
+    const msg = await UnreadMessageModel.findOne({
+      discussionId: discussionId,
+    });
+    if (msg) {
+      if (msg?.sender.id.toString() == userId.toString()) {
+        if (msg.sender.value > 0) {
+          msg.sender.value = 0;
+          msg.save();
+        }
+        return msg.sender.value;
+      } else if (msg?.receiver?.id.toString() == userId.toString()) {
+        if (msg.receiver.value > 0) {
+          msg.receiver.value = 0;
+          msg.save();
+        }
+        return msg.receiver.value;
+      }
+    }
+  } catch (error) {
+    console.log(error);
+    throw error;
   }
 };
 
@@ -88,6 +163,7 @@ const getUserDiscussionList = async (id) => {
 const getDiscussion = async (id) => {
   try {
     const disc = await Discussion.findOne({ _id: id }).lean(true);
+
     return disc;
   } catch (error) {
     throw new Error(error);
@@ -148,6 +224,26 @@ const getUserConnections = async (id) => {
   }
 };
 
+async function updateMessageReactions({ ...props }) {
+  try {
+    const { msgId, reaction, senderId, receiverId, discId } = props;
+    const data = await Message.findOne({ _id: msgId });
+    data.reactions = [...data.reactions, reaction];
+    await data.save();
+
+    const user = await UserModel.findOne({ _id: receiverId })
+      .select(["username"])
+      .lean(true);
+    const discussion = await Discussion.findOne({ _id: discId });
+    discussion.lastMessage = `${user.username} react with ${reaction}`;
+    discussion.save();
+
+    return data;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 module.exports = {
   verifyUser,
   getProfile,
@@ -161,4 +257,7 @@ module.exports = {
   createDiscussion,
   getUserConnections,
   findDiscussion,
+  updateMessageReactions,
+  getUnreadMsg,
+  resetUnreadMsg,
 };
